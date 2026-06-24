@@ -43,8 +43,9 @@ public class UserController {
                         request)
         );
     }
-    
+   
     @GetMapping("/{id}")
+    @PreAuthorize("hasAuthority('USER_VIEW')")
     public ResponseEntity<UserResponse>
     getUser(
             @PathVariable UUID id) {
@@ -55,6 +56,7 @@ public class UserController {
     }
     
     @GetMapping
+    @PreAuthorize("hasAuthority('USER_VIEW')")
     public ResponseEntity<Page<UserResponse>>
     searchUsers(
 
@@ -78,6 +80,7 @@ public class UserController {
     }
     
     @PutMapping("/{id}")
+    @PreAuthorize("hasAuthority('USER_UPDATE')")
     public ResponseEntity<UserResponse>
     updateUser(
 
@@ -96,6 +99,7 @@ public class UserController {
     }
     
     @PatchMapping("/{id}/disable")
+    @PreAuthorize("hasAuthority('USER_UPDATE')")
     public ResponseEntity<Void>
     disableUser(
             @PathVariable UUID id) {
@@ -107,6 +111,7 @@ public class UserController {
     }
   
     @PatchMapping("/{id}/activate")
+    @PreAuthorize("hasAuthority('USER_UPDATE')")
     public ResponseEntity<Void>
     activateUser(
             @PathVariable UUID id) {

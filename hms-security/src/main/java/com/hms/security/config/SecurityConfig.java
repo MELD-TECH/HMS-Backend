@@ -37,12 +37,12 @@ import org.springframework.security.web.authentication.
 public class SecurityConfig {
 
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
-        
+   
 	@Bean
     public SecurityFilterChain securityFilterChain(
             HttpSecurity http)
             throws Exception {
-
+    
         http
                 .csrf(csrf -> csrf.disable())
                 .sessionManagement(session ->

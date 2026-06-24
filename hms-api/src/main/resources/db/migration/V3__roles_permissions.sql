@@ -58,6 +58,7 @@ CREATE TABLE identity_schema.role_permissions
         REFERENCES identity_schema.permissions(id)
 );
 
+
 INSERT INTO identity_schema.roles
 (
     id,

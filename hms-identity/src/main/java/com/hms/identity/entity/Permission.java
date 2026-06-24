@@ -1,9 +1,14 @@
 package com.hms.identity.entity;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import com.hms.common.BaseEntity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.ManyToMany;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -27,4 +32,11 @@ public class Permission extends BaseEntity {
     private String code;
 
     private String description;
+    
+    @ManyToMany(
+            mappedBy = "permissions",
+            fetch = FetchType.LAZY
+    )
+    private Set<Role> roles =
+            new HashSet<>();
 }

@@ -1,0 +1,14 @@
+spring:
+
+  flyway:
+    enabled: true
+
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    open-in-view: false
+
+security:
+  jwt:
+    secret: test-secret-key-test-secret-key-test-secret-key
+    expiration: 86400000

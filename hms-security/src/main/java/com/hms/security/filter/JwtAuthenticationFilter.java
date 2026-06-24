@@ -77,9 +77,13 @@ public class JwtAuthenticationFilter
                                     username
                             );
 
-            if (jwtService.isTokenValid(
-                    jwt,
-                    userDetails.getUsername())) {
+            boolean valid =
+                    jwtService.isTokenValid(
+                            jwt,
+                            userDetails.getUsername()
+                    );
+
+            if (valid) {
 
                 UsernamePasswordAuthenticationToken auth =
                         new UsernamePasswordAuthenticationToken(

@@ -42,6 +42,7 @@ public class DatabaseUserDetailsService
                                         username
                                 )
                 );
+        
 
         return org.springframework.security.core.userdetails.User
                 .withUsername(
@@ -65,6 +66,7 @@ public class DatabaseUserDetailsService
 
         for (Role role : user.getRoles()) {
 
+            
             authorities.add(
                     new SimpleGrantedAuthority(
                             "ROLE_" + role.getName()
@@ -73,7 +75,8 @@ public class DatabaseUserDetailsService
 
             for (Permission permission :
                     role.getPermissions()) {
-
+            
+                
                 authorities.add(
                         new SimpleGrantedAuthority(
                                 permission.getCode()

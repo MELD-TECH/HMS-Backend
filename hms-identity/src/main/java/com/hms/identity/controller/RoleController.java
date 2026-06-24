@@ -15,13 +15,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.hms.identity.dto.AssignPermissionRequest;
-import com.hms.identity.dto.AssignRoleRequest;
 import com.hms.identity.dto.CreateRoleRequest;
 import com.hms.identity.dto.RoleResponse;
 import com.hms.identity.dto.UpdateRoleRequest;
 import com.hms.identity.service.RoleService;
 
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 @RestController
@@ -33,17 +31,14 @@ public class RoleController {
 
     @PostMapping
     @PreAuthorize("hasAuthority('ROLE_CREATE')")
-    public ResponseEntity<RoleResponse>
-    createRole(
-            @Valid
-            @RequestBody
-            CreateRoleRequest request) {
+    public ResponseEntity<RoleResponse> createRole(
+            @RequestBody CreateRoleRequest request) {
 
         return ResponseEntity.ok(
                 service.createRole(request)
         );
     }
-
+    
     @GetMapping
     @PreAuthorize("hasAuthority('ROLE_VIEW')")
     public ResponseEntity<List<RoleResponse>>
@@ -84,8 +79,6 @@ public class RoleController {
     public ResponseEntity<Void> assignPermissions(
             @PathVariable UUID roleId,
             @RequestBody AssignPermissionRequest request) {
-
-    	System.out.println("Assigning role " + request.permissionId() + " to role" + roleId);
     	
         service.assignPermission(
         		roleId,
