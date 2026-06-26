@@ -2,6 +2,9 @@ package com.hms.identity.service;
 
 import com.hms.common.exception.BusinessException;
 import com.hms.common.exception.ResourceNotFoundException;
+import com.hms.identity.audit.annotation.Auditable;
+import com.hms.identity.audit.event.AuditEventPublisher;
+import com.hms.identity.audit.service.AuditService;
 import com.hms.identity.dto.*;
 import com.hms.identity.entity.Role;
 import com.hms.identity.entity.User;
@@ -9,6 +12,7 @@ import com.hms.identity.enums.UserStatus;
 import com.hms.identity.mapper.UserMapper;
 import com.hms.identity.repository.RoleRepository;
 import com.hms.identity.repository.UserRepository;
+import com.hms.security.util.SecurityUtils;
 
 import java.util.UUID;
 
@@ -24,6 +28,7 @@ public class UserService {
 
     private final UserRepository repository;
     private final RoleRepository roleRepository;
+    private final AuditService auditService;
 
 
     private final PasswordEncoder passwordEncoder;
@@ -31,14 +36,21 @@ public class UserService {
     public UserService(
             UserRepository repository,
             PasswordEncoder passwordEncoder,
-            RoleRepository roleRepository) {
+            RoleRepository roleRepository,
+            AuditService auditService) {
 
         this.repository = repository;
         this.passwordEncoder = passwordEncoder;
         this.roleRepository = roleRepository;
+        this.auditService = auditService;
+        
 
     }
 
+    @Auditable(
+            action = "USER_CREATED",
+            entity = "USER"
+    )
     public UserResponse createUser(
             CreateUserRequest request) {
 
@@ -68,6 +80,15 @@ public class UserService {
 
         User saved =
                 repository.save(user);
+        
+        auditService.log(
+                SecurityUtils.getCurrentUsername(),
+                "USER_CREATED",
+                "USER",
+                saved.getId().toString(),
+                "Created user " + saved.getUsername(),
+                null
+        );
 
         return UserMapper.toResponse(
                 saved);
@@ -121,6 +142,15 @@ public class UserService {
         User updated =
                 repository.save(user);
 
+        auditService.log(
+                SecurityUtils.getCurrentUsername(),
+                "USER_UPDATED",
+                "USER",
+                updated.getId().toString(),
+                "Updated user " + updated.getUsername(),
+                null
+        );
+        
         return UserMapper.toResponse(updated);
     }
     
@@ -138,6 +168,15 @@ public class UserService {
                 UserStatus.DISABLED
         );
 
+        auditService.log(
+                SecurityUtils.getCurrentUsername(),
+                "USER_DISABLED",
+                "USER",
+                user.getId().toString(),
+                "Disabled user " + user.getUsername(),
+                null
+        );
+        
         repository.save(user);
     }
    
@@ -153,6 +192,15 @@ public class UserService {
 
         user.setStatus(UserStatus.ACTIVE);
 
+        auditService.log(
+                SecurityUtils.getCurrentUsername(),
+                "USER_ACTIVATED",
+                "USER",
+                user.getId().toString(),
+                "Activated user " + user.getUsername(),
+                null
+        );
+        
         repository.save(user);
     }
    
@@ -177,6 +225,15 @@ public class UserService {
 
         user.getRoles().add(role);
         repository.save(user);
+        
+        auditService.log(
+                SecurityUtils.getCurrentUsername(),
+                "ROLE_ASSIGNED",
+                "USER",
+                user.getId().toString(),
+                "Assigned role " + role.getName(),
+                null
+        );
        
     }
     
@@ -202,5 +259,14 @@ public class UserService {
                 );
 
         repository.save(user);
+        
+        auditService.log(
+                SecurityUtils.getCurrentUsername(),
+                "ROLE_REMOVED",
+                "USER",
+                user.getId().toString(),
+                "Removed role " + roleId,
+                null
+        );
     }
 }

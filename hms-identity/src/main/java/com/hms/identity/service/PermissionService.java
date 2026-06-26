@@ -7,11 +7,13 @@ import org.springframework.stereotype.Service;
 
 import com.hms.common.exception.BusinessException;
 import com.hms.common.exception.ResourceNotFoundException;
+import com.hms.identity.audit.service.AuditService;
 import com.hms.identity.dto.CreatePermissionRequest;
 import com.hms.identity.dto.PermissionResponse;
 import com.hms.identity.dto.UpdatePermissionRequest;
 import com.hms.identity.entity.Permission;
 import com.hms.identity.repository.PermissionRepository;
+import com.hms.security.util.SecurityUtils;
 
 import jakarta.transaction.Transactional;
 
@@ -20,11 +22,14 @@ import jakarta.transaction.Transactional;
 public class PermissionService {
 
     private final PermissionRepository repository;
+    private final AuditService auditService;
 
     public PermissionService(
-    		PermissionRepository repository) {
+    		PermissionRepository repository,
+    		            AuditService auditService) {
 
         this.repository = repository;
+        this.auditService = auditService;
     }
 
     public PermissionResponse createPermission(
@@ -47,6 +52,15 @@ public class PermissionService {
         Permission saved =
                 repository.save(perm);
 
+        auditService.log(
+                SecurityUtils.getCurrentUsername(),
+                "PERMISSION_CREATED",
+                "PERMISSION",
+                saved.getId().toString(),
+                saved.getCode(),
+                null
+        );
+        
         return new PermissionResponse(
                 saved.getId(),
                 saved.getCode(),
@@ -103,6 +117,15 @@ public class PermissionService {
         Permission updated =
                 repository.save(permission);
 
+        auditService.log(
+                SecurityUtils.getCurrentUsername(),
+                "PERMISSION_UPDATED",
+                "PERMISSION",
+                updated.getId().toString(),
+                updated.getCode(),
+                null
+        );
+        
         return new PermissionResponse(
                 updated.getId(),
                 updated.getCode(),

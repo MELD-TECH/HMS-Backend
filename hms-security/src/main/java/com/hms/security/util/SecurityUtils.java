@@ -1,5 +1,6 @@
 package com.hms.security.util;
 
+import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 
@@ -7,17 +8,20 @@ public class SecurityUtils {
 
     private SecurityUtils() {}
 
-    public static String currentUsername() {
+    public static String getCurrentUsername() {
 
-        Authentication authentication =
+        Authentication auth =
                 SecurityContextHolder
                         .getContext()
                         .getAuthentication();
 
-        if (authentication == null) {
-            return null;
+        if (auth == null ||
+            !auth.isAuthenticated() ||
+            auth instanceof AnonymousAuthenticationToken) {
+
+            return "SYSTEM";
         }
 
-        return authentication.getName();
+        return auth.getName();
     }
 }
