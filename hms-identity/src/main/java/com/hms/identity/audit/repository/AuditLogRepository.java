@@ -1,0 +1,25 @@
+package com.hms.identity.audit.repository;
+
+import java.util.UUID;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
+
+import com.hms.identity.audit.entity.AuditLog;
+
+@Repository
+public interface AuditLogRepository
+        extends JpaRepository<AuditLog, UUID> {
+
+    Page<AuditLog> findByUsername(
+            String username,
+            Pageable pageable
+    );
+
+    Page<AuditLog> findByAction(
+            String action,
+            Pageable pageable
+    );
+}
