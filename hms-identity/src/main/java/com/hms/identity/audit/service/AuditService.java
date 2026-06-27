@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.hms.identity.audit.dto.AuditLogResponse;
+import com.hms.identity.audit.dto.AuditRequest;
 import com.hms.identity.audit.entity.AuditLog;
 import com.hms.identity.audit.repository.AuditLogRepository;
 
@@ -17,28 +18,27 @@ public class AuditService {
 
     private final AuditLogRepository repository;
 
-    @Transactional
-    public void log(
-            String username,
-            String action,
-            String entityName,
-            String entityId,
-            String details,
-            String ipAddress) {
+    	@Transactional
+    	public void log(AuditRequest request) {
 
-        AuditLog auditLog =
-                AuditLog.builder()
-                        .username(username)
-                        .action(action)
-                        .entityName(entityName)
-                        .entityId(entityId)
-                        .details(details)
-                        .ipAddress(ipAddress)
-                        .build();
+    	    AuditLog auditLog =
+    	            AuditLog.builder()
+    	                    .username(request.username())
+    	                    .action(request.action())
+    	                    .module(request.module())
+    	                    .entityName(request.entity())
+    	                    .entityId(request.entityId())
+    	                    .beforeJson(request.beforeJson())
+    	                    .afterJson(request.afterJson())
+    	                    .details(request.details())
+    	                    .ipAddress(request.ipAddress())
+    	                    .userAgent(request.userAgent())
+    	                    .build();
 
         repository.save(auditLog);
     }
-
+    
+    
     public Page<AuditLogResponse> search(
             Pageable pageable) {
 
@@ -49,10 +49,15 @@ public class AuditService {
                                         audit.getId(),
                                         audit.getUsername(),
                                         audit.getAction(),
+                                        audit.getModule(),
                                         audit.getEntityName(),
                                         audit.getEntityId(),
+                                        audit.getBeforeJson(),
+                                        audit.getAfterJson(),
                                         audit.getDetails(),
-                                        audit.getCreatedAt()
+                                        audit.getIpAddress(),
+                                        audit.getUserAgent(),
+                                        audit.getCreatedAt()                                                                               
                                 )
                 );
     }

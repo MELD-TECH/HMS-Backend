@@ -3,8 +3,13 @@ package com.hms.identity.service;
 import com.hms.common.exception.BusinessException;
 import com.hms.common.exception.ResourceNotFoundException;
 import com.hms.identity.audit.annotation.Auditable;
+import com.hms.identity.audit.dto.AuditRequest;
+import com.hms.identity.audit.enums.AuditAction;
+import com.hms.identity.audit.enums.AuditModule;
 import com.hms.identity.audit.event.AuditEventPublisher;
 import com.hms.identity.audit.service.AuditService;
+import com.hms.identity.audit.util.AuditContext;
+import com.hms.identity.audit.util.JsonDiffUtil;
 import com.hms.identity.dto.*;
 import com.hms.identity.entity.Role;
 import com.hms.identity.entity.User;
@@ -29,6 +34,7 @@ public class UserService {
     private final UserRepository repository;
     private final RoleRepository roleRepository;
     private final AuditService auditService;
+    private final JsonDiffUtil jsonUtil;
 
 
     private final PasswordEncoder passwordEncoder;
@@ -37,18 +43,21 @@ public class UserService {
             UserRepository repository,
             PasswordEncoder passwordEncoder,
             RoleRepository roleRepository,
-            AuditService auditService) {
+            AuditService auditService,
+            JsonDiffUtil jsonUtil) {
 
         this.repository = repository;
         this.passwordEncoder = passwordEncoder;
         this.roleRepository = roleRepository;
         this.auditService = auditService;
+        this.jsonUtil = jsonUtil;
         
 
     }
 
     @Auditable(
             action = "USER_CREATED",
+            module = "IDENTITY",
             entity = "USER"
     )
     public UserResponse createUser(
@@ -80,15 +89,34 @@ public class UserService {
 
         User saved =
                 repository.save(user);
-        
+       
         auditService.log(
-                SecurityUtils.getCurrentUsername(),
-                "USER_CREATED",
-                "USER",
-                saved.getId().toString(),
-                "Created user " + saved.getUsername(),
-                null
-        );
+
+        		AuditRequest.builder()
+
+        		.username(SecurityUtils.getCurrentUsername())
+
+        		.action(AuditAction.USER_CREATED.name())
+
+        		.module(AuditModule.IDENTITY.name())
+
+        		.entity("USER")
+
+        		.entityId(saved.getId().toString())
+
+        		.beforeJson(null)
+
+        		.afterJson(jsonUtil.toJson(saved))
+
+        		.details("Created user")
+
+        		.ipAddress(AuditContext.getIpAddress())
+
+        		.userAgent(AuditContext.getUserAgent())
+
+        		.build()
+
+        		);
 
         return UserMapper.toResponse(
                 saved);
@@ -138,18 +166,41 @@ public class UserService {
 
         user.setEmail(
                 request.email());
+        
+        String before = jsonUtil.toJson(user);
 
-        User updated =
-                repository.save(user);
+        User updated = repository.save(user);
+        
+        String after = jsonUtil.toJson(updated);
+        
 
         auditService.log(
-                SecurityUtils.getCurrentUsername(),
-                "USER_UPDATED",
-                "USER",
-                updated.getId().toString(),
-                "Updated user " + updated.getUsername(),
-                null
-        );
+
+        		AuditRequest.builder()
+
+        		.username(SecurityUtils.getCurrentUsername())
+
+        		.action(AuditAction.USER_UPDATED.name())
+
+        		.module(AuditModule.IDENTITY.name())
+
+        		.entity("USER")
+
+        		.entityId(updated.getId().toString())
+
+        		.beforeJson(before)
+
+        		.afterJson(after)
+
+        		.details("Updated user")
+
+        		.ipAddress(AuditContext.getIpAddress())
+
+        		.userAgent(AuditContext.getUserAgent())
+
+        		.build()
+
+        		);
         
         return UserMapper.toResponse(updated);
     }
@@ -164,20 +215,29 @@ public class UserService {
                         )
                 );
 
-        user.setStatus(
-                UserStatus.DISABLED
-        );
+        String before =
+                jsonUtil.toJson(user);
+
+        user.setStatus(UserStatus.DISABLED);
+
+        repository.save(user);
+
+        String after =
+                jsonUtil.toJson(user);
 
         auditService.log(
-                SecurityUtils.getCurrentUsername(),
-                "USER_DISABLED",
-                "USER",
-                user.getId().toString(),
-                "Disabled user " + user.getUsername(),
-                null
-        );
-        
-        repository.save(user);
+                AuditRequest.builder()
+                        .username(SecurityUtils.getCurrentUsername())
+                        .action(AuditAction.USER_DISABLED.name())
+                        .module(AuditModule.IDENTITY.name())
+                        .entity("USER")
+                        .entityId(user.getId().toString())
+                        .beforeJson(before)
+                        .afterJson(after)
+                        .details("Disabled user")
+                        .ipAddress(AuditContext.getIpAddress())
+                        .userAgent(AuditContext.getUserAgent())
+                        .build());
     }
    
     @Transactional
@@ -190,19 +250,31 @@ public class UserService {
                         )
                 );
 
+        String before =
+                jsonUtil.toJson(user);
+        
         user.setStatus(UserStatus.ACTIVE);
+        
+        repository.save(user);    
+        
+        String after =
+                jsonUtil.toJson(user);
 
         auditService.log(
-                SecurityUtils.getCurrentUsername(),
-                "USER_ACTIVATED",
-                "USER",
-                user.getId().toString(),
-                "Activated user " + user.getUsername(),
-                null
-        );
-        
-        repository.save(user);
+                AuditRequest.builder()
+                        .username(SecurityUtils.getCurrentUsername())
+                        .action(AuditAction.USER_ENABLED.name())
+                        .module(AuditModule.IDENTITY.name())
+                        .entity("USER")
+                        .entityId(user.getId().toString())
+                        .beforeJson(before)
+                        .afterJson(after)
+                        .details("Ativated user")
+                        .ipAddress(AuditContext.getIpAddress())
+                        .userAgent(AuditContext.getUserAgent())
+                        .build());
     }
+        
    
     @Transactional
     public void assignRole(
@@ -224,19 +296,30 @@ public class UserService {
                 ));
 
         user.getRoles().add(role);
+        
+        String before =
+                jsonUtil.toJson(user);
+        
         repository.save(user);
         
+        String after = jsonUtil.toJson(user);
+        
         auditService.log(
-                SecurityUtils.getCurrentUsername(),
-                "ROLE_ASSIGNED",
-                "USER",
-                user.getId().toString(),
-                "Assigned role " + role.getName(),
-                null
-        );
-       
+                AuditRequest.builder()
+                        .username(SecurityUtils.getCurrentUsername())
+                        .action(AuditAction.ROLE_ASSIGNED.name())
+                        .module(AuditModule.IDENTITY.name())
+                        .entity("USER")
+                        .entityId(user.getId().toString())
+                        .beforeJson(before)
+                        .afterJson(after)
+                        .details("Assigned role to user")
+                        .ipAddress(AuditContext.getIpAddress())
+                        .userAgent(AuditContext.getUserAgent())
+                        .build());
     }
-    
+       
+     
     @Transactional
     public void removeRole(
             UUID userId,
@@ -258,15 +341,25 @@ public class UserService {
                                         .equals(roleId)
                 );
 
+        String before =
+                jsonUtil.toJson(user);
+        
         repository.save(user);
         
+        String after = jsonUtil.toJson(user);
+        
         auditService.log(
-                SecurityUtils.getCurrentUsername(),
-                "ROLE_REMOVED",
-                "USER",
-                user.getId().toString(),
-                "Removed role " + roleId,
-                null
-        );
+                AuditRequest.builder()
+                        .username(SecurityUtils.getCurrentUsername())
+                        .action(AuditAction.ROLE_REMOVED.name())
+                        .module(AuditModule.IDENTITY.name())
+                        .entity("USER")
+                        .entityId(user.getId().toString())
+                        .beforeJson(before)
+                        .afterJson(after)
+                        .details("Removed role from user")
+                        .ipAddress(AuditContext.getIpAddress())
+                        .userAgent(AuditContext.getUserAgent())
+                        .build());
     }
 }

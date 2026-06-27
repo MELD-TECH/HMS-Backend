@@ -1,0 +1,32 @@
+package com.hms.identity.audit.enums;
+
+public enum AuditAction {
+
+    USER_CREATED,
+
+    USER_UPDATED,
+
+    USER_DISABLED,
+
+    USER_ENABLED,
+
+    USER_LOGIN,
+
+    USER_LOGOUT,
+
+    ROLE_CREATED,
+
+    ROLE_UPDATED,
+
+    ROLE_ASSIGNED,
+
+    ROLE_REMOVED,
+
+    PERMISSION_CREATED,
+
+    PERMISSION_UPDATED,
+
+    PERMISSION_ASSIGNED,
+
+    PERMISSION_REMOVED
+}

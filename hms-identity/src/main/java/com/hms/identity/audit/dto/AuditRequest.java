@@ -1,11 +1,9 @@
 package com.hms.identity.audit.dto;
 
-import java.time.LocalDateTime;
-import java.util.UUID;
+import lombok.Builder;
 
-public record AuditLogResponse(
-
-        UUID id,
+@Builder
+public record AuditRequest(
 
         String username,
 
@@ -13,7 +11,7 @@ public record AuditLogResponse(
 
         String module,
 
-        String entityName,
+        String entity,
 
         String entityId,
 
@@ -25,7 +23,6 @@ public record AuditLogResponse(
 
         String ipAddress,
 
-        String userAgent,
+        String userAgent
 
-        LocalDateTime createdAt
 ) {}

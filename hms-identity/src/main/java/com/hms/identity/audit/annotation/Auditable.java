@@ -11,5 +11,7 @@ public @interface Auditable {
 
     String action();
 
+    String module();
+    
     String entity();
 }

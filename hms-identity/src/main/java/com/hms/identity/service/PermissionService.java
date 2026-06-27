@@ -7,7 +7,12 @@ import org.springframework.stereotype.Service;
 
 import com.hms.common.exception.BusinessException;
 import com.hms.common.exception.ResourceNotFoundException;
+import com.hms.identity.audit.dto.AuditRequest;
+import com.hms.identity.audit.enums.AuditAction;
+import com.hms.identity.audit.enums.AuditModule;
 import com.hms.identity.audit.service.AuditService;
+import com.hms.identity.audit.util.AuditContext;
+import com.hms.identity.audit.util.JsonDiffUtil;
 import com.hms.identity.dto.CreatePermissionRequest;
 import com.hms.identity.dto.PermissionResponse;
 import com.hms.identity.dto.UpdatePermissionRequest;
@@ -23,13 +28,17 @@ public class PermissionService {
 
     private final PermissionRepository repository;
     private final AuditService auditService;
+    private final JsonDiffUtil 	jsonUtil;
 
+    
     public PermissionService(
     		PermissionRepository repository,
-    		            AuditService auditService) {
+    		            AuditService auditService,
+    		            JsonDiffUtil jsonUtil) {
 
         this.repository = repository;
         this.auditService = auditService;
+        this.jsonUtil = jsonUtil;
     }
 
     public PermissionResponse createPermission(
@@ -51,15 +60,23 @@ public class PermissionService {
 
         Permission saved =
                 repository.save(perm);
+        
+        String after = jsonUtil.toJson(saved);
 
         auditService.log(
-                SecurityUtils.getCurrentUsername(),
-                "PERMISSION_CREATED",
-                "PERMISSION",
-                saved.getId().toString(),
-                saved.getCode(),
-                null
-        );
+                AuditRequest.builder()
+                        .username(SecurityUtils.getCurrentUsername())
+                        .action(AuditAction.PERMISSION_CREATED.name())
+                        .module(AuditModule.IDENTITY.name())
+                        .entity("ROLE")
+                        .entityId(saved.getId().toString())
+                        .beforeJson(null)
+                        .afterJson(after)
+                        .details("Created Permission")
+                        .ipAddress(AuditContext.getIpAddress())
+                        .userAgent(AuditContext.getUserAgent())
+                        .build());
+        
         
         return new PermissionResponse(
                 saved.getId(),
@@ -110,21 +127,30 @@ public class PermissionService {
                                         )
                         );
 
+        String before = jsonUtil.toJson(permission);
+        
         permission.setDescription(
                 request.description()
         );
 
         Permission updated =
                 repository.save(permission);
+        
+        String after = jsonUtil.toJson(updated);
 
         auditService.log(
-                SecurityUtils.getCurrentUsername(),
-                "PERMISSION_UPDATED",
-                "PERMISSION",
-                updated.getId().toString(),
-                updated.getCode(),
-                null
-        );
+                AuditRequest.builder()
+                        .username(SecurityUtils.getCurrentUsername())
+                        .action(AuditAction.PERMISSION_UPDATED.name())
+                        .module(AuditModule.IDENTITY.name())
+                        .entity("ROLE")
+                        .entityId(updated.getId().toString())
+                        .beforeJson(before)
+                        .afterJson(after)
+                        .details("Updated Permission")
+                        .ipAddress(AuditContext.getIpAddress())
+                        .userAgent(AuditContext.getUserAgent())
+                        .build());
         
         return new PermissionResponse(
                 updated.getId(),
