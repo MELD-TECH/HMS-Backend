@@ -1,4 +1,4 @@
-package com.hms.api.dto;
+package com.hms.identity.dto;
 
 import jakarta.validation.constraints.NotBlank;
 

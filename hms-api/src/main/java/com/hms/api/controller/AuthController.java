@@ -1,9 +1,11 @@
 package com.hms.api.controller;
 
-import com.hms.api.dto.*;
 
-import com.hms.api.service.AuthService;
+import com.hms.identity.dto.LoginRequest;
+import com.hms.identity.dto.LoginResponse;
+import com.hms.identity.service.AuthenticationService;
 
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 
 import org.springframework.http.ResponseEntity;
@@ -14,10 +16,10 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/auth")
 public class AuthController {
 
-    private final AuthService authService;
+    private final AuthenticationService authService;
 
     public AuthController(
-            AuthService authService) {
+            AuthenticationService authService) {
 
         this.authService = authService;
     }
@@ -27,10 +29,10 @@ public class AuthController {
     login(
             @Valid
             @RequestBody
-            LoginRequest request) {
+            LoginRequest request, HttpServletRequest servletRequest) {
 
         return ResponseEntity.ok(
-                authService.login(request)
+                authService.login(request, servletRequest)
         );
     }
 }

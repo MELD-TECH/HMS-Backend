@@ -63,4 +63,22 @@ public abstract class BaseIntegrationTest
         return json.get("accessToken")
                 .asText();
     }
+    
+    protected String login()
+            throws Exception {
+
+        return mockMvc.perform(
+                post("/auth/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                        {
+                          "username":"admin",
+                          "password":"password"
+                        }
+                        """)
+        )
+        .andReturn()
+        .getResponse()
+        .getContentAsString();
+    }
 }

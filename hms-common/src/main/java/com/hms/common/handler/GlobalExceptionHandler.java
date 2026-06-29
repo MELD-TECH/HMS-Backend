@@ -3,6 +3,7 @@ package com.hms.common.handler;
 import com.hms.common.ErrorResponse;
 
 import com.hms.common.exception.BusinessException;
+import com.hms.common.exception.InvalidRefreshTokenException;
 import com.hms.common.exception.ResourceNotFoundException;
 
 import jakarta.servlet.http.HttpServletRequest;
@@ -122,6 +123,28 @@ public class GlobalExceptionHandler {
 
         return ResponseEntity
                 .status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(response);
+    }
+   
+    @ExceptionHandler(
+            InvalidRefreshTokenException.class)
+    public ResponseEntity<ErrorResponse>
+    handleInvalidRefreshToken(
+
+            InvalidRefreshTokenException ex,
+            HttpServletRequest request) {
+
+        ErrorResponse response =
+        		new ErrorResponse(        
+                       "INVALID_REFRESH_TOKEN",
+                        ex.getMessage(),
+                        request.getRequestURI(),
+                        LocalDateTime.now()                        
+        				);
+                        
+
+        return ResponseEntity
+                .status(HttpStatus.UNAUTHORIZED)
                 .body(response);
     }
     

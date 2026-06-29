@@ -12,7 +12,9 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 import java.util.function.Function;
 
 @Service
@@ -46,6 +48,23 @@ public class JwtService {
                 .compact();
     }
 
+    public String generateToken(
+            String username,
+            UUID sessionId) {
+
+        Map<String,Object> claims =
+                new HashMap<>();
+
+        claims.put(
+                "sessionId",
+                sessionId.toString());
+
+        return generateToken(
+                claims,
+                username);
+
+    }
+    
     public String extractUsername(String token) {
         return extractClaim(
                 token,
@@ -125,4 +144,20 @@ public class JwtService {
             return 0; 
         }
     }
+    
+    public UUID extractSessionId(
+            String token){
+
+        String id =
+                extractClaim(
+                        token,
+                        claims ->
+                            claims.get(
+                                "sessionId",
+                                String.class));
+
+        return UUID.fromString(id);
+    }
+    
+
 }
