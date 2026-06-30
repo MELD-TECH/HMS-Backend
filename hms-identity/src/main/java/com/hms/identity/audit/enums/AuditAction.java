@@ -28,5 +28,15 @@ public enum AuditAction {
 
     PERMISSION_ASSIGNED,
 
-    PERMISSION_REMOVED
+    PERMISSION_REMOVED,
+   
+    PASSWORD_CHANGED,
+    
+    PASSWORD_RESET_REQUEST,
+   
+    PASSWORD_RESET,
+    
+    LOGIN_FAILED,
+    
+    LOGIN_SUCCESS
 }

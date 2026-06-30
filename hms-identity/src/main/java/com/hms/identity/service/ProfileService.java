@@ -9,12 +9,13 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.hms.common.exception.BusinessException;
 import com.hms.common.exception.ResourceNotFoundException;
-import com.hms.identity.dto.ChangePasswordRequest;
+
 import com.hms.identity.dto.ProfileResponse;
 import com.hms.identity.dto.UpdateProfileRequest;
 import com.hms.identity.entity.Permission;
 import com.hms.identity.entity.Role;
 import com.hms.identity.entity.User;
+import com.hms.identity.password.dto.ChangePasswordRequest;
 import com.hms.identity.repository.UserRepository;
 
 

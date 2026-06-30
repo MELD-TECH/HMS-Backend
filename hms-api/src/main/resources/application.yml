@@ -42,3 +42,17 @@ security:
     secret: ${security.jwt.secret}
     expiration: 86400000
 
+  password:
+    minimum-length: 12
+    maximum-length: 64
+    require-uppercase: true
+    require-lowercase: true
+    require-digit: true
+    require-special-character: true
+    history-size: 5
+    expiry-days: 90
+    history-count: 5
+
+  account:
+    max-failed-attempts: 5
+    lock-duration-minutes: 30

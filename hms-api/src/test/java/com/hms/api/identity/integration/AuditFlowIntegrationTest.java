@@ -51,10 +51,8 @@ mockMvc.perform(
 	.andExpect(status().isOk());
 
 	AuditLog log =
-			repository.findAll()
-				.stream()
-				.findFirst()
-				.orElseThrow();
+			repository.findFirstByAction("ROLE_CREATED")
+							.orElseThrow();
 
 	assertEquals(
 			"ROLE_CREATED",

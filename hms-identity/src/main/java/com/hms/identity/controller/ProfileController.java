@@ -9,9 +9,10 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.hms.identity.dto.ChangePasswordRequest;
+
 import com.hms.identity.dto.ProfileResponse;
 import com.hms.identity.dto.UpdateProfileRequest;
+import com.hms.identity.password.dto.ChangePasswordRequest;
 import com.hms.identity.service.ProfileService;
 
 import jakarta.validation.Valid;

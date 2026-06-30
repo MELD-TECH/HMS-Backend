@@ -1,10 +1,16 @@
 package com.hms.identity.service;
 
 
+import com.hms.common.exception.BusinessException;
+import com.hms.identity.audit.dto.AuditRequest;
+import com.hms.identity.audit.enums.AuditAction;
+import com.hms.identity.audit.enums.AuditModule;
+import com.hms.identity.audit.service.AuditService;
 import com.hms.identity.dto.LoginRequest;
 import com.hms.identity.dto.LoginResponse;
 import com.hms.identity.entity.User;
 import com.hms.identity.repository.UserRepository;
+import com.hms.identity.security.service.LoginAttemptService;
 import com.hms.identity.session.dto.RefreshTokenRequest;
 import com.hms.identity.session.entity.RefreshToken;
 import com.hms.identity.session.service.RefreshTokenService;
@@ -35,21 +41,64 @@ public class AuthenticationService {
     
     private final RefreshTokenService refreshTokenService;
     
+    private final LoginAttemptService loginAttemptService;
+    
+    private final AuditService auditService;
+    
 	public LoginResponse login(
             LoginRequest request, HttpServletRequest servletRequest) {
 
-        authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(
-                        request.username(),
-                        request.password()
-                )
-        );
+		User user =
+		        userRepository
+		                .findByUsername(request.username())
+		                .orElse(null);
 
-        User user =
-                userRepository
-                        .findByUsername(request.username())
-                        .orElseThrow();
-        
+		try {
+
+		    authenticationManager.authenticate(
+		            new UsernamePasswordAuthenticationToken(
+		                    request.username(),
+		                    request.password()));
+
+		    loginAttemptService.loginSucceeded(user);
+		    
+		    auditService.log(
+		            AuditRequest.builder()
+		                    .username(user.getUsername())
+		                    .action(
+		                            AuditAction.LOGIN_SUCCESS.name())
+		                    .module(
+		                            AuditModule.IDENTITY.name())
+		                    .entity("USER")
+		                    .entityId(
+		                            user.getId().toString())
+		                    .details(
+		                            "User authenticated successfully")
+		                    .build());
+
+		}
+		catch (BadCredentialsException ex) {
+
+			if (user != null) {
+			    loginAttemptService.loginFailed(user);
+			    auditService.log(
+			            AuditRequest.builder()
+			                    .username(user.getUsername())
+			                    .action(
+			                            AuditAction.LOGIN_FAILED.name())
+			                    .module(
+			                            AuditModule.IDENTITY.name())
+			                    .entity("USER")
+			                    .entityId(
+			                            user.getId().toString())
+			                    .details(
+			                            "Invalid username/password")
+			                    .build());
+			}
+
+		    throw ex;
+		}
+		
         String ip =
                 IpUtil.ip(servletRequest);
 
@@ -143,6 +192,8 @@ public class AuthenticationService {
 	                    accessToken)
 	    );
 	}
+	
+	
 
 }
 

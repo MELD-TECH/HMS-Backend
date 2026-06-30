@@ -66,4 +66,23 @@ public class User extends BaseEntity {
     )
     private Set<Role> roles = new HashSet<>();
     // getters and setters
+    
+    @Column(name = "password_changed_at")
+    private LocalDateTime passwordChangedAt;
+
+    @Column(name = "password_expires_at")
+    private LocalDateTime passwordExpiresAt;
+   
+    @Column(nullable = false)
+    @Builder.Default
+    private Integer failedLoginAttempts = 0;
+
+    @Column(nullable = false)
+    @Builder.Default
+    private Boolean accountLocked = false;
+
+    private LocalDateTime lockedAt;
+
+    private LocalDateTime lockExpiresAt;
+    
 }

@@ -1,6 +1,7 @@
 package com.hms.identity.audit.repository;
 
 import java.time.LocalDateTime;
+import java.util.Optional;
 import java.util.UUID;
 
 import org.springframework.data.domain.Page;
@@ -31,9 +32,11 @@ public interface AuditLogRepository
     Page<AuditLog> findByEntityName(
             String entityName,
             Pageable pageable);
-    
+   
     Page<AuditLog> findByCreatedAtBetween(
             LocalDateTime from,
             LocalDateTime to,
             Pageable pageable);
+    
+    Optional<AuditLog> findFirstByAction(String action);
 }

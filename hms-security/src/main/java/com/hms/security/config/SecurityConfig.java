@@ -42,7 +42,7 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(
             HttpSecurity http)
             throws Exception {
-    
+   
         http
                 .csrf(csrf -> csrf.disable())
                 .sessionManagement(session ->
@@ -55,7 +55,9 @@ public class SecurityConfig {
                                 "/swagger-ui/**",
                                 "/v3/api-docs/**",
                                 "/actuator/**",
-                                "/health" 
+                                "/health",
+                                "/auth/forgot-password",
+                                "/auth/reset-password"
                         )
                         .permitAll()
                         .anyRequest()
