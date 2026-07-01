@@ -10,6 +10,7 @@ import com.hms.identity.dto.LoginRequest;
 import com.hms.identity.dto.LoginResponse;
 import com.hms.identity.entity.User;
 import com.hms.identity.repository.UserRepository;
+import com.hms.identity.security.service.AccountLockService;
 import com.hms.identity.security.service.LoginAttemptService;
 import com.hms.identity.session.dto.RefreshTokenRequest;
 import com.hms.identity.session.entity.RefreshToken;
@@ -45,6 +46,8 @@ public class AuthenticationService {
     
     private final AuditService auditService;
     
+    private final AccountLockService accountLockService;
+    
 	public LoginResponse login(
             LoginRequest request, HttpServletRequest servletRequest) {
 
@@ -53,6 +56,12 @@ public class AuthenticationService {
 		                .findByUsername(request.username())
 		                .orElse(null);
 
+		if (user != null) {
+
+		    accountLockService.validate(user);
+
+		}
+		
 		try {
 
 		    authenticationManager.authenticate(

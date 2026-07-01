@@ -1,7 +1,7 @@
 package com.hms.common.handler;
 
 import com.hms.common.ErrorResponse;
-
+import com.hms.common.exception.AccountLockedException;
 import com.hms.common.exception.BusinessException;
 import com.hms.common.exception.InvalidRefreshTokenException;
 import com.hms.common.exception.ResourceNotFoundException;
@@ -164,5 +164,31 @@ public class GlobalExceptionHandler {
         return ResponseEntity
                 .status(HttpStatus.UNAUTHORIZED)
                 .body(response);
+    }
+    
+    @ExceptionHandler(AccountLockedException.class)
+    public ResponseEntity<ErrorResponse> handleLocked(
+
+            AccountLockedException ex,
+
+            HttpServletRequest request) {
+
+        return ResponseEntity
+
+                .status(423)
+
+                .body(
+
+                        ErrorResponse.builder()
+
+                                .code("ACCOUNT_LOCKED")
+
+                                .message(ex.getMessage())
+
+                                .path(request.getRequestURI())
+
+                                .timestamp(LocalDateTime.now())
+
+                                .build());
     }
 }

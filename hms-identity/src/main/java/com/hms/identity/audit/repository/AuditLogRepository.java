@@ -37,6 +37,8 @@ public interface AuditLogRepository
             LocalDateTime from,
             LocalDateTime to,
             Pageable pageable);
-    
+   
     Optional<AuditLog> findFirstByAction(String action);
+    
+    Optional<AuditLog> findTopByActionOrderByCreatedAtDesc(String action);
 }

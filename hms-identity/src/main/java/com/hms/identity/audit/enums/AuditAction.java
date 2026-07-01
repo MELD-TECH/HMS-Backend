@@ -38,5 +38,9 @@ public enum AuditAction {
     
     LOGIN_FAILED,
     
-    LOGIN_SUCCESS
+    LOGIN_SUCCESS,
+    
+    ACCOUNT_LOCKED,
+    
+    ACCOUNT_UNLOCKED
 }

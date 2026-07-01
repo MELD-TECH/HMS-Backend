@@ -1,5 +1,6 @@
 package com.hms.identity.repository;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -68,4 +69,6 @@ public interface UserRepository
     void updateFailedAttempts(
             UUID userId,
             Integer attempts);
+    
+    List<User> findByAccountLockedTrue();
 }

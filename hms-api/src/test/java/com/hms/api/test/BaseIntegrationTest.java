@@ -13,6 +13,7 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 
 @SpringBootTest(
@@ -63,7 +64,7 @@ public abstract class BaseIntegrationTest
         return json.get("accessToken")
                 .asText();
     }
-    
+   
     protected String login()
             throws Exception {
 
@@ -80,5 +81,40 @@ public abstract class BaseIntegrationTest
         .andReturn()
         .getResponse()
         .getContentAsString();
+    }
+    
+    protected String obtainSecurityAdminToken()
+            throws Exception {
+
+        String response =
+
+                mockMvc.perform(
+
+                        post("/auth/login")
+
+                                .contentType(MediaType.APPLICATION_JSON)
+
+                                .content("""
+                                {
+                                    "username":"security-admin",
+                                    "password":"password"
+                                }
+                                """))
+
+                .andExpect(status().isOk())
+
+                .andReturn()
+
+                .getResponse()
+
+                .getContentAsString();
+
+        return objectMapper
+
+                .readTree(response)
+
+                .get("accessToken")
+
+                .asText();
     }
 }
