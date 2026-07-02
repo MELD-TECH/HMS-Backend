@@ -56,3 +56,6 @@ security:
   account:
     max-failed-attempts: 5
     lock-duration-minutes: 30
+
+  lock:
+    scheduler: 60000

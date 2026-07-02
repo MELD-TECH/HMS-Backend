@@ -41,6 +41,8 @@ public enum AuditAction {
     LOGIN_SUCCESS,
     
     ACCOUNT_LOCKED,
+   
+    ACCOUNT_UNLOCKED,
     
-    ACCOUNT_UNLOCKED
+    ACCOUNT_AUTO_UNLOCKED
 }

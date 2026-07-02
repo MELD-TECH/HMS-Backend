@@ -5,6 +5,7 @@ import java.util.UUID;
 
 import org.springframework.security.authentication.LockedException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.hms.common.exception.AccountLockedException;
@@ -49,37 +50,41 @@ public class AccountLockService {
          * lock expired
          */
 
-        unlock(user);
+        automaticUnlock(user);
     }
 
-    public void unlock(User user) {
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public void automaticUnlock(User user) {
 
+    	clearLock(user);
+    	
         user.setAccountLocked(false);
-
         user.setFailedLoginAttempts(0);
-
         user.setLockedAt(null);
-
         user.setLockExpiresAt(null);
 
         repository.save(user);
-        
+
         auditService.log(
+
                 AuditRequest.builder()
+
                         .username(user.getUsername())
+
                         .action(
-                                AuditAction.ACCOUNT_UNLOCKED.name())
+                                AuditAction.ACCOUNT_AUTO_UNLOCKED.name())
+
                         .module(
                                 AuditModule.IDENTITY.name())
-                        .entity("USER")
-                        .entityId(
-                                user.getId().toString())
-                        .details(
-                                "Account unlocked by administrator")
-                        .build()
 
-        );
-        
+                        .entity("USER")
+
+                        .entityId(user.getId().toString())
+
+                        .details(
+                                "Automatically unlocked after lock duration")
+
+                        .build());
     }
 
     public void unlock(UUID userId) {
@@ -88,7 +93,48 @@ public class AccountLockService {
                 repository.findById(userId)
                         .orElseThrow();
 
-        unlock(user);
+    	clearLock(user);
+    	
+        unlockByAdministrator(user);
+    }
+    
+    private void unlockByAdministrator(User user) {
+	
+        user.setAccountLocked(false);
+        user.setFailedLoginAttempts(0);
+        user.setLockedAt(null);
+        user.setLockExpiresAt(null);
+
+        repository.save(user);
+
+        auditService.log(
+
+                AuditRequest.builder()
+
+                        .username(user.getUsername())
+
+                        .action(
+                                AuditAction.ACCOUNT_UNLOCKED.name())
+
+                        .module(
+                                AuditModule.IDENTITY.name())
+
+                        .entity("USER")
+
+                        .entityId(user.getId().toString())
+
+                        .details(
+                                "Account unlocked by administrator")
+
+                        .build());
+    }
+    
+    private void clearLock(User user) {
+        user.setAccountLocked(false);
+        user.setFailedLoginAttempts(0);
+        user.setLockedAt(null);
+        user.setLockExpiresAt(null);
+        repository.save(user);
     }
 
 }

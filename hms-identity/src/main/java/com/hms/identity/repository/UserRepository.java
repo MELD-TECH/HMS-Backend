@@ -69,6 +69,17 @@ public interface UserRepository
     void updateFailedAttempts(
             UUID userId,
             Integer attempts);
-    
+   
     List<User> findByAccountLockedTrue();
+    
+    @Query("""
+    		select u
+    		from User u
+    		where
+    		    u.accountLocked = true
+    		and
+    		    u.lockExpiresAt <= CURRENT_TIMESTAMP
+    		""")
+    		List<User> findAccountsToUnlock();
+    
 }
