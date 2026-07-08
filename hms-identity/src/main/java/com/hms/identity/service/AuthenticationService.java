@@ -9,7 +9,11 @@ import com.hms.identity.audit.service.AuditService;
 import com.hms.identity.dto.LoginRequest;
 import com.hms.identity.dto.LoginResponse;
 import com.hms.identity.entity.User;
+import com.hms.identity.password.service.PasswordExpiryService;
 import com.hms.identity.repository.UserRepository;
+import com.hms.identity.security.event.LoginFailureEvent;
+import com.hms.identity.security.event.LoginSuccessEvent;
+import com.hms.identity.security.publisher.SecurityEventPublisher;
 import com.hms.identity.security.service.AccountLockService;
 import com.hms.identity.security.service.LoginAttemptService;
 import com.hms.identity.session.dto.RefreshTokenRequest;
@@ -45,8 +49,12 @@ public class AuthenticationService {
     private final LoginAttemptService loginAttemptService;
     
     private final AuditService auditService;
-    
+   
     private final AccountLockService accountLockService;
+    
+    private final SecurityEventPublisher securityEventPublisher;
+    
+    private final PasswordExpiryService passwordExpiryService;
     
 	public LoginResponse login(
             LoginRequest request, HttpServletRequest servletRequest) {
@@ -69,40 +77,31 @@ public class AuthenticationService {
 		                    request.username(),
 		                    request.password()));
 
-		    loginAttemptService.loginSucceeded(user);
+		    passwordExpiryService.validate(user);
 		    
-		    auditService.log(
-		            AuditRequest.builder()
-		                    .username(user.getUsername())
-		                    .action(
-		                            AuditAction.LOGIN_SUCCESS.name())
-		                    .module(
-		                            AuditModule.IDENTITY.name())
-		                    .entity("USER")
-		                    .entityId(
-		                            user.getId().toString())
-		                    .details(
-		                            "User authenticated successfully")
-		                    .build());
+		    loginAttemptService.loginSucceeded(request.username());
+		    
+		    securityEventPublisher.publish(
+
+		            new LoginSuccessEvent(
+
+		                    user.getUsername(),
+
+		                    user.getId().toString()));
 
 		}
 		catch (BadCredentialsException ex) {
 
 			if (user != null) {
-			    loginAttemptService.loginFailed(user);
-			    auditService.log(
-			            AuditRequest.builder()
-			                    .username(user.getUsername())
-			                    .action(
-			                            AuditAction.LOGIN_FAILED.name())
-			                    .module(
-			                            AuditModule.IDENTITY.name())
-			                    .entity("USER")
-			                    .entityId(
-			                            user.getId().toString())
-			                    .details(
-			                            "Invalid username/password")
-			                    .build());
+			    loginAttemptService.loginFailed(request.username());
+			    
+			    securityEventPublisher.publish(
+
+			            new LoginFailureEvent(
+
+			                    user.getUsername(),
+
+			                    user.getId().toString()));
 			}
 
 		    throw ex;

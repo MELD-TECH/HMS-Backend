@@ -12,6 +12,9 @@ import org.springframework.transaction.annotation.Transactional;
 import com.hms.common.exception.BusinessException;
 import com.hms.common.exception.InvalidRefreshTokenException;
 import com.hms.identity.entity.User;
+import com.hms.identity.security.event.RefreshTokenCreatedEvent;
+import com.hms.identity.security.event.RefreshTokenRevokedEvent;
+import com.hms.identity.security.publisher.SecurityEventPublisher;
 import com.hms.identity.session.entity.RefreshToken;
 import com.hms.identity.session.repository.RefreshTokenRepository;
 
@@ -26,6 +29,8 @@ public class RefreshTokenService {
     private long refreshDays;
 
     private final RefreshTokenRepository repository;
+    
+    private final SecurityEventPublisher securityEventPublisher;
 
     public RefreshToken create(
             User user,
@@ -48,6 +53,12 @@ public class RefreshTokenService {
                         .userAgent(userAgent)
                         .build();
 
+       
+		securityEventPublisher
+				.publish(new RefreshTokenCreatedEvent(
+						user.getUsername(), 
+						user.getId().toString()));
+		
         return repository.save(token);
     }
 
@@ -112,6 +123,14 @@ public class RefreshTokenService {
                 LocalDateTime.now());
 
         repository.save(refresh);
+        
+        securityEventPublisher.publish(
+
+                new RefreshTokenRevokedEvent(
+
+                        refresh.getUser().getUsername(),
+
+                        refresh.getId().toString()));
     }
 
     public void revoke(UUID sessionId) {
@@ -126,6 +145,14 @@ public class RefreshTokenService {
                 LocalDateTime.now());
 
         repository.save(refresh);
+        
+        securityEventPublisher.publish(
+
+                new RefreshTokenRevokedEvent(
+
+                        refresh.getUser().getUsername(),
+
+                        refresh.getId().toString()));
     }
 
     public void revokeAll(UUID userId) {

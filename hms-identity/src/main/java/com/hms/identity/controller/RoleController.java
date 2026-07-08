@@ -14,7 +14,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.hms.identity.dto.AssignPermissionRequest;
 import com.hms.identity.dto.CreateRoleRequest;
 import com.hms.identity.dto.RoleResponse;
 import com.hms.identity.dto.UpdateRoleRequest;
@@ -72,18 +71,17 @@ public class RoleController {
         );
     }
     
-    @PostMapping("/{roleId}/permissions")
-    @PreAuthorize(
-            "hasAuthority('ROLE_UPDATE')"
-    )
-    public ResponseEntity<Void> assignPermissions(
+    @PostMapping("/{roleId}/permissions/{permissionId}")
+    @PreAuthorize("hasAuthority('ROLE_UPDATE')")
+    public ResponseEntity<Void> assignPermission(
+
             @PathVariable UUID roleId,
-            @RequestBody AssignPermissionRequest request) {
-    	
+
+            @PathVariable UUID permissionId) {
+
         service.assignPermission(
-        		roleId,
-                request.permissionId()
-        );
+                roleId,
+                permissionId);
 
         return ResponseEntity.ok().build();
     }

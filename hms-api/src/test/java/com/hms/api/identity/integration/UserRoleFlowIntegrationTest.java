@@ -86,7 +86,8 @@ class UserRoleFlowIntegrationTest
                 post(
                     "/api/v1/users/"
                     + user.getId()
-                    + "/roles"
+                    + "/roles/"
+                    + role.getId()
                 )
                 .header(
                         "Authorization",

@@ -7,6 +7,9 @@ import java.util.UUID;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.hms.identity.security.event.SessionRevokedAllEvent;
+import com.hms.identity.security.event.SessionRevokedEvent;
+import com.hms.identity.security.publisher.SecurityEventPublisher;
 import com.hms.identity.session.dto.SessionResponse;
 import com.hms.identity.session.entity.RefreshToken;
 import com.hms.identity.session.mapper.SessionMapper;
@@ -20,6 +23,8 @@ import lombok.RequiredArgsConstructor;
 public class SessionService {
 
     private final RefreshTokenRepository repository;
+    
+    private final SecurityEventPublisher securityEventPublisher;
 
     public List<SessionResponse> sessions(
             String username){
@@ -43,6 +48,10 @@ public class SessionService {
                 LocalDateTime.now());
 
         repository.save(session);
+        
+		securityEventPublisher.publish(new SessionRevokedEvent(session.getUser().getUsername(),
+				session.getUser().getId().toString()));
+        
     }
 
     @Transactional
@@ -57,6 +66,8 @@ public class SessionService {
                         .getId();
 
         repository.revokeAll(userId);
+        
+        securityEventPublisher.publish(new SessionRevokedAllEvent(username, userId.toString()));
     }
 
 }

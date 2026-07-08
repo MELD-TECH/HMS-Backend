@@ -39,6 +39,14 @@ public interface AuditLogRepository
             Pageable pageable);
    
     Optional<AuditLog> findFirstByAction(String action);
-    
+   
     Optional<AuditLog> findTopByActionOrderByCreatedAtDesc(String action);
+    
+    Optional<AuditLog> findTopByActionAndUsernameOrderByCreatedAtDesc(
+            String action,
+            String username);
+
+    Optional<AuditLog> findTopByActionAndEntityIdOrderByCreatedAtDesc(
+            String action,
+            String entityId);
 }

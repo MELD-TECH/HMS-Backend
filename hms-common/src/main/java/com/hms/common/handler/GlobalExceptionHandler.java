@@ -4,6 +4,7 @@ import com.hms.common.ErrorResponse;
 import com.hms.common.exception.AccountLockedException;
 import com.hms.common.exception.BusinessException;
 import com.hms.common.exception.InvalidRefreshTokenException;
+import com.hms.common.exception.PasswordExpiredException;
 import com.hms.common.exception.ResourceNotFoundException;
 
 import jakarta.servlet.http.HttpServletRequest;
@@ -190,5 +191,28 @@ public class GlobalExceptionHandler {
                                 .timestamp(LocalDateTime.now())
 
                                 .build());
+    }
+    
+    @ExceptionHandler(PasswordExpiredException.class)
+    public ResponseEntity<ErrorResponse> handlePasswordExpired(
+            PasswordExpiredException ex,
+            HttpServletRequest request) {
+
+        return ResponseEntity
+                .status(HttpStatus.FORBIDDEN)
+                .body(
+
+                        ErrorResponse.builder()
+
+                                .code("PASSWORD_EXPIRED")
+
+                                .message(ex.getMessage())
+
+                                .path(request.getRequestURI())
+
+                                .timestamp(LocalDateTime.now())
+
+                                .build());
+
     }
 }

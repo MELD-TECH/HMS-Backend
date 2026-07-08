@@ -1,7 +1,10 @@
 package com.hms.identity.password.service;
 
+import com.hms.identity.session.repository.RefreshTokenRepository;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 
 import org.springframework.data.domain.PageRequest;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -10,10 +13,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.hms.common.exception.BusinessException;
 import com.hms.common.exception.ResourceNotFoundException;
-import com.hms.identity.audit.dto.AuditRequest;
-import com.hms.identity.audit.enums.AuditAction;
-import com.hms.identity.audit.enums.AuditModule;
-import com.hms.identity.audit.service.AuditService;
 import com.hms.identity.entity.User;
 import com.hms.identity.password.config.PasswordPolicyProperties;
 import com.hms.identity.password.dto.ChangePasswordRequest;
@@ -26,6 +25,11 @@ import com.hms.identity.password.repository.PasswordResetTokenRepository;
 import com.hms.identity.password.validator.PasswordPolicyValidator;
 import com.hms.identity.repository.UserRepository;
 
+import com.hms.identity.security.event.PasswordChangedEvent;
+import com.hms.identity.security.event.PasswordResetCompletedEvent;
+import com.hms.identity.security.event.PasswordResetRequestedEvent;
+import com.hms.identity.security.publisher.SecurityEventPublisher;
+
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -33,7 +37,9 @@ import lombok.RequiredArgsConstructor;
 @Transactional
 public class PasswordService {
 
-    private final UserRepository userRepository;
+    private final RefreshTokenRepository refreshTokenRepository;
+
+	private final UserRepository userRepository;
 
     private final PasswordHistoryRepository historyRepository;
 
@@ -44,9 +50,10 @@ public class PasswordService {
     private final PasswordPolicyValidator validator;
 
     private final PasswordPolicyProperties properties;
+        
+    private final SecurityEventPublisher securityEventPublisher;
+  
 
-    private final AuditService auditService;
-    
     private void updatePassword(
 
             User user,
@@ -166,38 +173,124 @@ public class PasswordService {
                 request.newPassword());
 
         /*
-         * Audit
+         * Publish Event
          */
-        auditService.log(
+        
+	    securityEventPublisher.publish(
 
-                AuditRequest.builder()
+	            new PasswordChangedEvent(
 
-                        .username(username)
+	                    user.getUsername(),
 
-                        .action(AuditAction.PASSWORD_CHANGED.name())
-
-                        .module(AuditModule.IDENTITY.name())
-
-                        .entity("USER")
-
-                        .entityId(
-                                user.getId().toString())
-
-                        .details("Password changed")
-
-                        .build());
+	                    user.getId().toString()));
+	
     }
     
     public void forgotPassword(
-
             ForgotPasswordRequest request) {
 
+        Optional<User> optional =
+                userRepository.findByEmail(
+                        request.email());
+
+        /*
+         * Prevent email enumeration.
+         */
+        if (optional.isEmpty()) {
+            return;
+        }
+
+        User user = optional.get();
+
+        tokenRepository.expireUnusedTokens(
+                user.getId());
+
+        PasswordResetToken token =
+                PasswordResetToken.builder()
+                        .user(user)
+                        .token(UUID.randomUUID().toString())
+                        .expiresAt(
+                                LocalDateTime.now()
+                                        .plusMinutes(30))
+                        .used(false)
+                        .build();
+
+        tokenRepository.save(token);
+
+        securityEventPublisher.publish(
+
+                new PasswordResetRequestedEvent(
+
+                        user.getUsername(),
+
+                        user.getId().toString())
+
+        );
+
+        /*
+         * Email sending comes later.
+         */
     }
     
     public void resetPassword(
-
             ResetPasswordRequest request) {
 
+        PasswordResetToken token =
+
+                tokenRepository
+                        .findByToken(request.token())
+                        .orElseThrow(() ->
+                                new BusinessException(
+                                        "Invalid reset token"));
+
+        if (token.isUsed()) {
+
+            throw new BusinessException(
+                    "Reset token already used");
+        }
+
+        if (token.getExpiresAt()
+                .isBefore(LocalDateTime.now())) {
+
+            throw new BusinessException(
+                    "Reset token expired");
+        }
+
+        if (!request.newPassword()
+                .equals(request.confirmPassword())) {
+
+            throw new BusinessException(
+                    "Passwords do not match");
+        }
+
+        User user = token.getUser();
+
+        updatePassword(
+                user,
+                request.newPassword());
+
+        token.setUsed(true);
+
+        token.setUsedAt(
+                LocalDateTime.now());
+
+        tokenRepository.save(token);
+
+        tokenRepository.expireAll(
+                user.getId());
+
+        refreshTokenRepository.revokeAll(
+                user.getId());
+
+        securityEventPublisher.publish(
+
+                new PasswordResetCompletedEvent(
+
+                        user.getUsername(),
+
+                        user.getId().toString())
+
+        );
     }
     
 

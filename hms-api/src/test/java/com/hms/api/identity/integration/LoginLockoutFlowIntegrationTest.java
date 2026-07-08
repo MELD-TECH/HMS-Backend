@@ -6,15 +6,12 @@ import static org.junit.Assert.assertTrue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import java.util.UUID;
-
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.jdbc.Sql;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.hms.api.test.BaseIntegrationTest;
 import com.hms.identity.audit.entity.AuditLog;
 import com.hms.identity.audit.repository.AuditLogRepository;
@@ -151,7 +148,9 @@ class LoginLockoutFlowIntegrationTest
 
         mockMvc.perform(
 
-                post("/api/v1/security/unlock")
+                post("/api/v1/security/users/"
+                		+ user.getId()
+                		+ "/unlock")
 
                         .header(
                                 "Authorization",
@@ -206,7 +205,9 @@ class LoginLockoutFlowIntegrationTest
 
         mockMvc.perform(
 
-                post("/api/v1/security/unlock")
+                post("/api/v1/security/users/"
+                		+ user.getId()
+                		+ "/unlock")
 
                         .header(
                                 "Authorization",
@@ -312,7 +313,9 @@ class LoginLockoutFlowIntegrationTest
 
         mockMvc.perform(
 
-                post("/api/v1/security/unlock")
+                post("/api/v1/security/users/"
+                		+ user.getId()
+                		+ "/unlock")
 
                         .header(
                                 "Authorization",

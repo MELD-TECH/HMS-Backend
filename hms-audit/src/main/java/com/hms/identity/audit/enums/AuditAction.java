@@ -31,9 +31,11 @@ public enum AuditAction {
     PERMISSION_REMOVED,
    
     PASSWORD_CHANGED,
-    
-    PASSWORD_RESET_REQUEST,
    
+    PASSWORD_RESET_REQUESTED,
+    
+    PASSWORD_EXPIRED,
+    
     PASSWORD_RESET,
     
     LOGIN_FAILED,
@@ -44,5 +46,7 @@ public enum AuditAction {
    
     ACCOUNT_UNLOCKED,
     
-    ACCOUNT_AUTO_UNLOCKED
+    ACCOUNT_AUTO_UNLOCKED,
+    
+    REFRESH_TOKEN_REVOKED
 }

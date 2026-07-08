@@ -49,6 +49,8 @@
 <!--	    <module>hms-audit</module>-->
 	    <module>hms-api</module>
 	    <module>hms-identity</module>
+	    <module>hms-audit</module>
+	    <module>hms-events</module>
 	</modules>
 
 	<build>

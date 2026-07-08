@@ -1,11 +1,6 @@
 package com.hms.identity.security.event;
 
-import java.time.LocalDateTime;
-
-import lombok.Getter;
-
-@Getter
-public abstract class SecurityEvent {
+public abstract class ApplicationEvent {
 
     private final String username;
 
@@ -13,9 +8,7 @@ public abstract class SecurityEvent {
 
     private final String entityId;
 
-    private final LocalDateTime occurredAt;
-
-    protected SecurityEvent(
+    protected ApplicationEvent(
             String username,
             String entity,
             String entityId) {
@@ -23,10 +16,23 @@ public abstract class SecurityEvent {
         this.username = username;
         this.entity = entity;
         this.entityId = entityId;
-        this.occurredAt = LocalDateTime.now();
+
+    }
+
+    public String getUsername() {
+        return username;
+    }
+
+    public String getEntity() {
+        return entity;
+    }
+
+    public String getEntityId() {
+        return entityId;
     }
 
     public abstract String action();
 
     public abstract String details();
+
 }

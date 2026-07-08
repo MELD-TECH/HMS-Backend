@@ -3,18 +3,19 @@ package com.hms.identity.security.service;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
-import org.springframework.security.authentication.LockedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.hms.common.exception.AccountLockedException;
-import com.hms.identity.audit.dto.AuditRequest;
-import com.hms.identity.audit.enums.AuditAction;
-import com.hms.identity.audit.enums.AuditModule;
-import com.hms.identity.audit.service.AuditService;
 import com.hms.identity.entity.User;
 import com.hms.identity.repository.UserRepository;
+import com.hms.identity.security.config.AccountSecurityProperties;
+import com.hms.identity.security.event.AccountAutoUnlockedEvent;
+import com.hms.identity.security.event.AccountLockedEvent;
+import com.hms.identity.security.event.AccountUnlockedEvent;
+import com.hms.identity.security.publisher.SecurityEventPublisher;
+import com.hms.security.util.SecurityUtils;
 
 import lombok.RequiredArgsConstructor;
 
@@ -24,8 +25,10 @@ import lombok.RequiredArgsConstructor;
 public class AccountLockService {
 
     private final UserRepository repository;
+       
+    private final SecurityEventPublisher publisher;
     
-    private final AuditService auditService;
+    private final AccountSecurityProperties properties;
 
     public void validate(User user) {
 
@@ -53,10 +56,10 @@ public class AccountLockService {
         automaticUnlock(user);
     }
 
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
+//    @Transactional
     public void automaticUnlock(User user) {
 
-    	clearLock(user);
+//    	clearLock(user);
     	
         user.setAccountLocked(false);
         user.setFailedLoginAttempts(0);
@@ -65,68 +68,56 @@ public class AccountLockService {
 
         repository.save(user);
 
-        auditService.log(
+        publisher.publish(
 
-                AuditRequest.builder()
+                new AccountAutoUnlockedEvent(
 
-                        .username(user.getUsername())
+                        user.getUsername(),
 
-                        .action(
-                                AuditAction.ACCOUNT_AUTO_UNLOCKED.name())
-
-                        .module(
-                                AuditModule.IDENTITY.name())
-
-                        .entity("USER")
-
-                        .entityId(user.getId().toString())
-
-                        .details(
-                                "Automatically unlocked after lock duration")
-
-                        .build());
+                        user.getId().toString()));
     }
 
     public void unlock(UUID userId) {
+
+        User user = repository.findById(userId)
+                .orElseThrow();
+
+        clearLock(user);
+
+        repository.save(user);
+
+        publisher.publish(
+            new AccountUnlockedEvent(
+                user.getUsername(),
+                user.getId().toString()));
+    }
+   
+    @Transactional
+    public void lock(UUID userId) {
 
         User user =
                 repository.findById(userId)
                         .orElseThrow();
 
-    	clearLock(user);
-    	
-        unlockByAdministrator(user);
-    }
-    
-    private void unlockByAdministrator(User user) {
-	
-        user.setAccountLocked(false);
-        user.setFailedLoginAttempts(0);
-        user.setLockedAt(null);
-        user.setLockExpiresAt(null);
+        user.setAccountLocked(true);
 
-        repository.save(user);
+        user.setLockedAt(LocalDateTime.now());
 
-        auditService.log(
+        user.setLockExpiresAt(
 
-                AuditRequest.builder()
+                LocalDateTime.now()
 
-                        .username(user.getUsername())
+                        .plusMinutes(
 
-                        .action(
-                                AuditAction.ACCOUNT_UNLOCKED.name())
+                                properties.getLockDurationMinutes()));
 
-                        .module(
-                                AuditModule.IDENTITY.name())
+        publisher.publish(
 
-                        .entity("USER")
+                new AccountLockedEvent(
 
-                        .entityId(user.getId().toString())
+                        SecurityUtils.getCurrentUsername(),
 
-                        .details(
-                                "Account unlocked by administrator")
-
-                        .build());
+                        user.getId().toString()));
     }
     
     private void clearLock(User user) {
@@ -134,7 +125,6 @@ public class AccountLockService {
         user.setFailedLoginAttempts(0);
         user.setLockedAt(null);
         user.setLockExpiresAt(null);
-        repository.save(user);
     }
 
 }

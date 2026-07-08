@@ -122,20 +122,17 @@ public class UserController {
                 .build();
     }
     
-    @PostMapping("/{userId}/roles")
-    @PreAuthorize(
-            "hasAuthority('USER_UPDATE')"
-    )
+    @PostMapping("/{userId}/roles/{roleId}")
+    @PreAuthorize("hasAuthority('USER_UPDATE')")
     public ResponseEntity<Void> assignRole(
-            @PathVariable UUID userId,
-            @RequestBody AssignRoleRequest request) {
 
-    	System.out.println("Assigning role " + request.roleId() + " to user " + userId);
-    	
+            @PathVariable UUID userId,
+
+            @PathVariable UUID roleId) {
+
         service.assignRole(
                 userId,
-                request.roleId()
-        );
+                roleId);
 
         return ResponseEntity.ok().build();
     }

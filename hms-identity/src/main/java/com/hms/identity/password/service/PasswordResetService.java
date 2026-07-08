@@ -8,10 +8,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.hms.common.exception.BusinessException;
-import com.hms.identity.audit.dto.AuditRequest;
-import com.hms.identity.audit.enums.AuditAction;
-import com.hms.identity.audit.enums.AuditModule;
-import com.hms.identity.audit.service.AuditService;
+import com.hms.identity.audit.repository.AuditLogRepository;
 import com.hms.identity.entity.User;
 import com.hms.identity.password.config.PasswordPolicyProperties;
 import com.hms.identity.password.dto.ForgotPasswordRequest;
@@ -20,6 +17,9 @@ import com.hms.identity.password.entity.PasswordResetToken;
 import com.hms.identity.password.repository.PasswordResetTokenRepository;
 import com.hms.identity.password.util.PasswordResetTokenGenerator;
 import com.hms.identity.repository.UserRepository;
+import com.hms.identity.security.event.PasswordResetCompletedEvent;
+import com.hms.identity.security.event.PasswordResetRequestedEvent;
+import com.hms.identity.security.publisher.SecurityEventPublisher;
 import com.hms.identity.session.repository.RefreshTokenRepository;
 
 import lombok.RequiredArgsConstructor;
@@ -33,8 +33,6 @@ public class PasswordResetService {
 	private final PasswordResetTokenRepository tokenRepository;
 
 	private final PasswordResetTokenGenerator tokenGenerator;
-
-	private final AuditService auditService;
 	
 	private final PasswordEncoder passwordEncoder;
 
@@ -45,6 +43,10 @@ public class PasswordResetService {
 	private final RefreshTokenRepository refreshRepository;
 	
 	private final PasswordPolicyProperties properties;
+	
+	private final SecurityEventPublisher securityEventPublisher;
+	
+	private final AuditLogRepository auditRepository;
 	
 	@Transactional
 	public void forgotPassword(
@@ -81,23 +83,18 @@ public class PasswordResetService {
 	                    .build();
 
 	    tokenRepository.save(token);
+	    
+	    System.out.println(token.getId());
+	    
+	    System.out.println(
+	            tokenRepository.count());
 
-	    auditService.log(
-
-	            AuditRequest.builder()
-	                    .username(user.getUsername())
-	                    .action(
-	                            AuditAction.PASSWORD_RESET_REQUEST.name())
-	                    .module(
-	                            AuditModule.IDENTITY.name())
-	                    .entity("PASSWORD_RESET")
-	                    .entityId(
-	                            token.getId().toString())
-	                    .details(
-	                            "Password reset requested")
-	                    .build());
-
-	    /*
+		securityEventPublisher.publish(new PasswordResetRequestedEvent(user.getUsername(), user.getId().toString()));
+		
+		System.out.println(
+		        auditRepository.count());
+		
+		/*
 	     * Email sending comes later.
 	     */
 	}
@@ -178,16 +175,13 @@ public class PasswordResetService {
 		refreshRepository.revokeAll(
 		        user.getId());
 		
-		auditService.log(
-		        AuditRequest.builder()
-		                .username(user.getUsername())
-		                .action(AuditAction.PASSWORD_RESET.name())
-		                .module(AuditModule.IDENTITY.name())
-		                .entity("USER")
-		                .entityId(user.getId().toString())
-		                .details("Password reset completed")
 
-		                .build());
+	    securityEventPublisher.publish(
+	    		                new PasswordResetCompletedEvent(
+                        user.getUsername(),
+                        user.getId().toString())
+        );
+	    
 	}
 
 }

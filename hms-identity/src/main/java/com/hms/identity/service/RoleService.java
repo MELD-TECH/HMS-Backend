@@ -20,6 +20,10 @@ import com.hms.identity.entity.Permission;
 import com.hms.identity.entity.Role;
 import com.hms.identity.repository.PermissionRepository;
 import com.hms.identity.repository.RoleRepository;
+import com.hms.identity.security.event.PermissionAssignedEvent;
+import com.hms.identity.security.event.PermissionRemovedEvent;
+import com.hms.identity.security.event.RoleAssignedEvent;
+import com.hms.identity.security.publisher.SecurityEventPublisher;
 import com.hms.security.util.SecurityUtils;
 
 import jakarta.transaction.Transactional;
@@ -31,17 +35,20 @@ public class RoleService {
     private final PermissionRepository permissionRepository;
     private final AuditService auditService;
     private JsonDiffUtil jsonUtil;
+    private SecurityEventPublisher securityEventPublisher;
 
     public RoleService(
             RoleRepository repository,
             PermissionRepository permissionRepository,
             AuditService auditService,
-            JsonDiffUtil jsonUtil) {
+            JsonDiffUtil jsonUtil,
+            SecurityEventPublisher securityEventPublisher) {
 
         this.repository = repository;
         this.permissionRepository = permissionRepository;
         this.auditService = auditService;
         this.jsonUtil = jsonUtil;
+        this.securityEventPublisher = securityEventPublisher;
     }
 
     public RoleResponse createRole(
@@ -188,69 +195,43 @@ public class RoleService {
         role.getPermissions()
                 .add(permission);
         
-        String before = jsonUtil.toJson(role);
-        
         repository.save(role);
-        
-        String after = jsonUtil.toJson(role);
-        
-        auditService.log(
-                AuditRequest.builder()
-                        .username(SecurityUtils.getCurrentUsername())
-                        .action(AuditAction.PERMISSION_ASSIGNED.name())
-                        .module(AuditModule.IDENTITY.name())
-                        .entity("ROLE")
-                        .entityId(role.getId().toString())
-                        .beforeJson(before)
-                        .afterJson(after)
-                        .details("Assigned Permissions to Role")
-                        .ipAddress(AuditContext.getIpAddress())
-                        .userAgent(AuditContext.getUserAgent())
-                        .build());
-        
+       
+        securityEventPublisher.publish(
+
+        	    new PermissionAssignedEvent(
+
+        	            SecurityUtils.getCurrentUsername(),
+
+        	            role.getId().toString())
+
+        	);
     }
     
     @Transactional
     public void removePermission(
+
             UUID roleId,
+
             UUID permissionId) {
 
         Role role =
                 repository.findById(roleId)
-                        .orElseThrow(
-                                () ->
-                                        new ResourceNotFoundException(
-                                                "Role not found"
-                                        )
-                        );
+                        .orElseThrow();
 
-        role.getPermissions()
-                .removeIf(
-                        permission ->
-                                permission.getId()
-                                        .equals(permissionId)
-                );
+        Permission permission =
+                permissionRepository.findById(permissionId)
+                        .orElseThrow();
 
-        String before = jsonUtil.toJson(role);
-        
-        repository.save(role);
-        
-        String after = jsonUtil.toJson(role);
-        
-        auditService.log(
-                AuditRequest.builder()
-                        .username(SecurityUtils.getCurrentUsername())
-                        .action(AuditAction.PERMISSION_REMOVED.name())
-                        .module(AuditModule.IDENTITY.name())
-                        .entity("ROLE")
-                        .entityId(role.getId().toString())
-                        .beforeJson(before)
-                        .afterJson(after)
-                        .details("Removed Permissions from Role")
-                        .ipAddress(AuditContext.getIpAddress())
-                        .userAgent(AuditContext.getUserAgent())
-                        .build());
-        
+        role.getPermissions().remove(permission);
+
+        securityEventPublisher.publish(
+
+                new PermissionRemovedEvent(
+
+                        SecurityUtils.getCurrentUsername(),
+
+                        role.getId().toString()));
     }
     
 }

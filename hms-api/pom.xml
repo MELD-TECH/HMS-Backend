@@ -81,7 +81,7 @@
         	<artifactId>hms-security</artifactId>
         	<version>0.0.1-SNAPSHOT</version> <!-- Uses the parent version -->
     	</dependency>
-		
+	
 		<dependency>
         	<groupId>com.hms</groupId> <!-- Replace with your actual group ID -->
         	<artifactId>hms-common</artifactId>
@@ -92,6 +92,11 @@
         	<artifactId>hms-identity</artifactId>
         	<version>0.0.1-SNAPSHOT</version> <!-- Uses the parent version -->
     	</dependency>
+		<dependency>
+		<groupId>com.hms</groupId> <!-- Replace with your actual group ID -->
+		<artifactId>hms-audit</artifactId>
+		<version>0.0.1-SNAPSHOT</version> <!-- Uses the parent version -->
+		</dependency>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter</artifactId>

@@ -5,9 +5,9 @@
     <artifactId>hms-backend</artifactId>
     <version>0.0.1-SNAPSHOT</version>
   </parent>
-  <artifactId>hms-identity</artifactId>
-  <name>com.hms.identity</name>
-  <description>HMS Identity System</description>
+  <artifactId>hms-audit</artifactId>
+  <name>com.hms.audit</name>
+  <description>HMS auditing module</description>
 	<url/>
 	<licenses>
 		<license/>
@@ -33,21 +33,6 @@
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-web</artifactId>
 		</dependency>
-
-		<dependency>
-			<groupId>org.postgresql</groupId>
-			<artifactId>postgresql</artifactId>
-			<scope>runtime</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.projectlombok</groupId>
-			<artifactId>lombok</artifactId>
-			<optional>true</optional>
-		</dependency>
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-validation</artifactId>
-		</dependency>	
 	<!-- Source: https://mvnrepository.com/artifact/org.apache.poi/poi-ooxml -->
 		<dependency>
     		<groupId>org.apache.poi</groupId>
@@ -57,47 +42,26 @@
 		</dependency>
 
 		<dependency>
-        	<groupId>com.hms</groupId> <!-- Replace with your actual group ID -->
-        	<artifactId>hms-common</artifactId>
-        	<version>0.0.1-SNAPSHOT</version> <!-- Uses the parent version -->
-    	</dependency>
-    	<dependency>
-        	<groupId>com.hms</groupId> <!-- Replace with your actual group ID -->
-        	<artifactId>hms-security</artifactId>
-        	<version>0.0.1-SNAPSHOT</version> <!-- Uses the parent version -->
-    	</dependency>
-    	<dependency>
-        	<groupId>com.hms</groupId> <!-- Replace with your actual group ID -->
-        	<artifactId>hms-audit</artifactId>
-        	<version>0.0.1-SNAPSHOT</version> <!-- Uses the parent version -->
-    	</dependency>
-    	<dependency>
-        	<groupId>com.hms</groupId> <!-- Replace with your actual group ID -->
-        	<artifactId>hms-events</artifactId>
-        	<version>0.0.1-SNAPSHOT</version> <!-- Uses the parent version -->
-    	</dependency>
-    	
+			<groupId>org.projectlombok</groupId>
+			<artifactId>lombok</artifactId>
+			<optional>true</optional>
+		</dependency>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-test</artifactId>
 			<scope>test</scope>
 		</dependency>
-
-		<dependency>
-    		<groupId>org.springframework.security</groupId>
-    		<artifactId>spring-security-test</artifactId>
-    		<scope>test</scope>
-		</dependency>
 		
 		<dependency>
-    		<groupId>
-        		org.springframework.boot
-    		</groupId>
-    		<artifactId>
-        		spring-boot-starter-aop
-    		</artifactId>
-		</dependency>
-
+        	<groupId>com.hms</groupId> <!-- Replace with your actual group ID -->
+        	<artifactId>hms-common</artifactId>
+        	<version>0.0.1-SNAPSHOT</version> <!-- Uses the parent version -->
+    	</dependency>
+		<dependency>
+        	<groupId>com.hms</groupId> <!-- Replace with your actual group ID -->
+        	<artifactId>hms-security</artifactId>
+        	<version>0.0.1-SNAPSHOT</version> <!-- Uses the parent version -->
+    	</dependency>
 	</dependencies>
 	<build>
 		<plugins>
