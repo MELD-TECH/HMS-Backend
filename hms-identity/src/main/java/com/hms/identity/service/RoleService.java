@@ -5,14 +5,18 @@ import java.util.UUID;
 
 import org.springframework.stereotype.Service;
 
+import com.hms.audit.security.dto.AuditRequest;
+import com.hms.audit.security.enums.AuditAction;
+import com.hms.audit.security.enums.AuditModule;
+import com.hms.audit.security.service.AuditService;
+import com.hms.audit.security.util.AuditContext;
+import com.hms.audit.security.util.JsonDiffUtil;
 import com.hms.common.exception.BusinessException;
 import com.hms.common.exception.ResourceNotFoundException;
-import com.hms.identity.audit.dto.AuditRequest;
-import com.hms.identity.audit.enums.AuditAction;
-import com.hms.identity.audit.enums.AuditModule;
-import com.hms.identity.audit.service.AuditService;
-import com.hms.identity.audit.util.AuditContext;
-import com.hms.identity.audit.util.JsonDiffUtil;
+import com.hms.events.security.PermissionAssignedEvent;
+import com.hms.events.security.PermissionRemovedEvent;
+import com.hms.events.security.RoleAssignedEvent;
+import com.hms.events.security.publisher.SecurityEventPublisher;
 import com.hms.identity.dto.CreateRoleRequest;
 import com.hms.identity.dto.RoleResponse;
 import com.hms.identity.dto.UpdateRoleRequest;
@@ -20,10 +24,6 @@ import com.hms.identity.entity.Permission;
 import com.hms.identity.entity.Role;
 import com.hms.identity.repository.PermissionRepository;
 import com.hms.identity.repository.RoleRepository;
-import com.hms.identity.security.event.PermissionAssignedEvent;
-import com.hms.identity.security.event.PermissionRemovedEvent;
-import com.hms.identity.security.event.RoleAssignedEvent;
-import com.hms.identity.security.publisher.SecurityEventPublisher;
 import com.hms.security.util.SecurityUtils;
 
 import jakarta.transaction.Transactional;

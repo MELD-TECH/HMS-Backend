@@ -3,6 +3,7 @@ package com.hms.identity.entity;
 
 import com.hms.common.BaseEntity;
 import com.hms.identity.enums.UserStatus;
+import com.hms.notification.mfa.enums.MfaType;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -84,5 +85,17 @@ public class User extends BaseEntity {
     private LocalDateTime lockedAt;
 
     private LocalDateTime lockExpiresAt;
+    
+    @Column(name = "mfa_enabled")
+    @Builder.Default
+    private Boolean mfaEnabled = false;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "mfa_type")
+    @Builder.Default
+    private MfaType mfaType = MfaType.NONE;
+
+    @Column(name = "mfa_secret")
+    private String mfaSecret;
     
 }

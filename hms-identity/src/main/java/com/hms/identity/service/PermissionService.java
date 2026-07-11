@@ -5,14 +5,14 @@ import java.util.UUID;
 
 import org.springframework.stereotype.Service;
 
+import com.hms.audit.security.dto.AuditRequest;
+import com.hms.audit.security.enums.AuditAction;
+import com.hms.audit.security.enums.AuditModule;
+import com.hms.audit.security.service.AuditService;
+import com.hms.audit.security.util.AuditContext;
+import com.hms.audit.security.util.JsonDiffUtil;
 import com.hms.common.exception.BusinessException;
 import com.hms.common.exception.ResourceNotFoundException;
-import com.hms.identity.audit.dto.AuditRequest;
-import com.hms.identity.audit.enums.AuditAction;
-import com.hms.identity.audit.enums.AuditModule;
-import com.hms.identity.audit.service.AuditService;
-import com.hms.identity.audit.util.AuditContext;
-import com.hms.identity.audit.util.JsonDiffUtil;
 import com.hms.identity.dto.CreatePermissionRequest;
 import com.hms.identity.dto.PermissionResponse;
 import com.hms.identity.dto.UpdatePermissionRequest;

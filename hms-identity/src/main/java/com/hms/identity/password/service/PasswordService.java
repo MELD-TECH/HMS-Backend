@@ -13,6 +13,10 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.hms.common.exception.BusinessException;
 import com.hms.common.exception.ResourceNotFoundException;
+import com.hms.events.security.PasswordChangedEvent;
+import com.hms.events.security.PasswordResetCompletedEvent;
+import com.hms.events.security.PasswordResetRequestedEvent;
+import com.hms.events.security.publisher.SecurityEventPublisher;
 import com.hms.identity.entity.User;
 import com.hms.identity.password.config.PasswordPolicyProperties;
 import com.hms.identity.password.dto.ChangePasswordRequest;
@@ -24,11 +28,6 @@ import com.hms.identity.password.repository.PasswordHistoryRepository;
 import com.hms.identity.password.repository.PasswordResetTokenRepository;
 import com.hms.identity.password.validator.PasswordPolicyValidator;
 import com.hms.identity.repository.UserRepository;
-
-import com.hms.identity.security.event.PasswordChangedEvent;
-import com.hms.identity.security.event.PasswordResetCompletedEvent;
-import com.hms.identity.security.event.PasswordResetRequestedEvent;
-import com.hms.identity.security.publisher.SecurityEventPublisher;
 
 import lombok.RequiredArgsConstructor;
 

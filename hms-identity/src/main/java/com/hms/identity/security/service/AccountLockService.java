@@ -8,13 +8,13 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.hms.common.exception.AccountLockedException;
+import com.hms.events.security.AccountAutoUnlockedEvent;
+import com.hms.events.security.AccountLockedEvent;
+import com.hms.events.security.AccountUnlockedEvent;
+import com.hms.events.security.publisher.SecurityEventPublisher;
 import com.hms.identity.entity.User;
 import com.hms.identity.repository.UserRepository;
 import com.hms.identity.security.config.AccountSecurityProperties;
-import com.hms.identity.security.event.AccountAutoUnlockedEvent;
-import com.hms.identity.security.event.AccountLockedEvent;
-import com.hms.identity.security.event.AccountUnlockedEvent;
-import com.hms.identity.security.publisher.SecurityEventPublisher;
 import com.hms.security.util.SecurityUtils;
 
 import lombok.RequiredArgsConstructor;

@@ -6,10 +6,10 @@ import java.util.UUID;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.hms.identity.audit.dto.AuditRequest;
-import com.hms.identity.audit.enums.AuditAction;
-import com.hms.identity.audit.enums.AuditModule;
-import com.hms.identity.audit.service.AuditService;
+import com.hms.audit.security.dto.AuditRequest;
+import com.hms.audit.security.enums.AuditAction;
+import com.hms.audit.security.enums.AuditModule;
+import com.hms.audit.security.service.AuditService;
 import com.hms.identity.entity.User;
 import com.hms.identity.repository.UserRepository;
 import com.hms.identity.security.config.AccountSecurityProperties;

@@ -5,9 +5,9 @@ import java.time.LocalDateTime;
 import org.springframework.stereotype.Service;
 
 import com.hms.common.exception.PasswordExpiredException;
+import com.hms.events.security.PasswordExpiredEvent;
+import com.hms.events.security.publisher.SecurityEventPublisher;
 import com.hms.identity.entity.User;
-import com.hms.identity.security.event.PasswordExpiredEvent;
-import com.hms.identity.security.publisher.SecurityEventPublisher;
 
 import lombok.RequiredArgsConstructor;
 

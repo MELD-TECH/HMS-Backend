@@ -7,8 +7,11 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.hms.audit.security.repository.AuditLogRepository;
 import com.hms.common.exception.BusinessException;
-import com.hms.identity.audit.repository.AuditLogRepository;
+import com.hms.events.security.PasswordResetCompletedEvent;
+import com.hms.events.security.PasswordResetRequestedEvent;
+import com.hms.events.security.publisher.SecurityEventPublisher;
 import com.hms.identity.entity.User;
 import com.hms.identity.password.config.PasswordPolicyProperties;
 import com.hms.identity.password.dto.ForgotPasswordRequest;
@@ -17,9 +20,6 @@ import com.hms.identity.password.entity.PasswordResetToken;
 import com.hms.identity.password.repository.PasswordResetTokenRepository;
 import com.hms.identity.password.util.PasswordResetTokenGenerator;
 import com.hms.identity.repository.UserRepository;
-import com.hms.identity.security.event.PasswordResetCompletedEvent;
-import com.hms.identity.security.event.PasswordResetRequestedEvent;
-import com.hms.identity.security.publisher.SecurityEventPublisher;
 import com.hms.identity.session.repository.RefreshTokenRepository;
 
 import lombok.RequiredArgsConstructor;

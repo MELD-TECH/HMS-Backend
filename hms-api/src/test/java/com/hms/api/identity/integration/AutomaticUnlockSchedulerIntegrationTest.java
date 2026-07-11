@@ -11,8 +11,8 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.jdbc.Sql;
 
 import com.hms.api.test.BaseIntegrationTest;
-import com.hms.identity.audit.entity.AuditLog;
-import com.hms.identity.audit.repository.AuditLogRepository;
+import com.hms.audit.security.entity.AuditLog;
+import com.hms.audit.security.repository.AuditLogRepository;
 import com.hms.identity.entity.User;
 import com.hms.identity.repository.UserRepository;
 import com.hms.identity.security.scheduler.AutomaticUnlockScheduler;

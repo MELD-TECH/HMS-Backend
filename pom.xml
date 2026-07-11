@@ -51,6 +51,7 @@
 	    <module>hms-identity</module>
 	    <module>hms-audit</module>
 	    <module>hms-events</module>
+	    <module>hms-notification</module>
 	</modules>
 
 	<build>

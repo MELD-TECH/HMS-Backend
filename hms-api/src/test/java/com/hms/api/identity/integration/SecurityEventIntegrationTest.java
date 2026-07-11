@@ -17,8 +17,8 @@ import org.springframework.test.context.jdbc.Sql;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.hms.api.test.BaseIntegrationTest;
-import com.hms.identity.audit.entity.AuditLog;
-import com.hms.identity.audit.repository.AuditLogRepository;
+import com.hms.audit.security.entity.AuditLog;
+import com.hms.audit.security.repository.AuditLogRepository;
 import com.hms.identity.entity.User;
 import com.hms.identity.password.repository.PasswordResetTokenRepository;
 import com.hms.identity.repository.PermissionRepository;

@@ -4,6 +4,8 @@ import com.hms.common.ErrorResponse;
 import com.hms.common.exception.AccountLockedException;
 import com.hms.common.exception.BusinessException;
 import com.hms.common.exception.InvalidRefreshTokenException;
+import com.hms.common.exception.OtpCooldownException;
+import com.hms.common.exception.OtpResendLimitExceededException;
 import com.hms.common.exception.PasswordExpiredException;
 import com.hms.common.exception.ResourceNotFoundException;
 
@@ -214,5 +216,38 @@ public class GlobalExceptionHandler {
 
                                 .build());
 
+    }
+    
+    
+    @ExceptionHandler(
+            OtpCooldownException.class)
+    public ResponseEntity<ErrorResponse> handleOtpCoolDown(
+            OtpCooldownException ex,
+            HttpServletRequest request) {
+
+        return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS).body(
+                ErrorResponse.builder()
+                        .code("OTP_COOLDOWN")
+                        .message(ex.getMessage())
+                        .path(request.getRequestURI())
+                        .timestamp(LocalDateTime.now())
+                       .build());
+    }
+    
+    @ExceptionHandler(
+            OtpResendLimitExceededException.class)
+    public ResponseEntity<ErrorResponse> handleOtpResendLimit(
+            OtpResendLimitExceededException ex,
+            HttpServletRequest request) {
+
+		return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS)
+				.body(
+						ErrorResponse.builder()
+						.code("OTP_RESEND_LIMIT_EXCEEDED")
+						.message(ex.getMessage())
+						.path(request.getRequestURI())
+						.timestamp(LocalDateTime.now())
+						.build());
+        		
     }
 }

@@ -7,9 +7,9 @@ import java.util.UUID;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.hms.identity.security.event.SessionRevokedAllEvent;
-import com.hms.identity.security.event.SessionRevokedEvent;
-import com.hms.identity.security.publisher.SecurityEventPublisher;
+import com.hms.events.security.SessionRevokedAllEvent;
+import com.hms.events.security.SessionRevokedEvent;
+import com.hms.events.security.publisher.SecurityEventPublisher;
 import com.hms.identity.session.dto.SessionResponse;
 import com.hms.identity.session.entity.RefreshToken;
 import com.hms.identity.session.mapper.SessionMapper;

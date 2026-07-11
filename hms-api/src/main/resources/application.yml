@@ -59,3 +59,14 @@ security:
 
   lock:
     scheduler: 60000
+
+  mfa:
+    enabled: true
+    otp-expiry-minutes: 5
+    otp-length: 6
+    max-attempts: 5
+    max-resend: 3
+    email-enabled: true
+    sms-enabled: false
+    max-resends: 3
+    resend-cooldown-seconds: 30
