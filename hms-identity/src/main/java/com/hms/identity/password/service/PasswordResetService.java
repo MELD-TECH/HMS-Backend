@@ -83,17 +83,9 @@ public class PasswordResetService {
 	                    .build();
 
 	    tokenRepository.save(token);
-	    
-	    System.out.println(token.getId());
-	    
-	    System.out.println(
-	            tokenRepository.count());
 
 		securityEventPublisher.publish(new PasswordResetRequestedEvent(user.getUsername(), user.getId().toString()));
-		
-		System.out.println(
-		        auditRepository.count());
-		
+				
 		/*
 	     * Email sending comes later.
 	     */

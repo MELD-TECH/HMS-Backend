@@ -137,7 +137,7 @@ public class OtpService {
 
         incrementResend(activeOtp);
 
-        expire(activeOtp);
+        expireByResend(activeOtp);
 
         OtpCode newOtp = generate(
 
@@ -194,14 +194,19 @@ public class OtpService {
         otp.setStatus(OtpStatus.EXPIRED);
 
         repository.save(otp);
+    }
+    
+    private void expireByResend(OtpCode otp) {
+
+        expire(otp);
 
         publisher.publish(
 
-                new OtpExpiredByResendEvent(
+            new OtpExpiredByResendEvent(
 
-                        SecurityUtils.getCurrentUsername(),
+                SecurityUtils.getCurrentUsername(),
 
-                        otp.getUserId().toString()));
+                otp.getUserId().toString()));
     }
 
     /**
@@ -267,57 +272,7 @@ public class OtpService {
         repository.save(otp);
 
     }
-    
-    private void validateResendLimit(
-            OtpCode otp) {
-
-        if (otp.getResendCount()
-                >= properties.getMaxResends()) {
-
-            publisher.publish(
-
-                    new OtpResendLimitExceededEvent(
-
-                            SecurityUtils.getCurrentUsername(),
-
-                            otp.getUserId().toString()));
-
-            throw new OtpResendLimitExceededException();
-        }
-
-    }
-    
-    private void validateCooldown(
-            OtpCode otp) {
-
-        if (otp.getLastResentAt() == null) {
-
-            return;
-        }
-
-        LocalDateTime allowed =
-
-                otp.getLastResentAt()
-
-                        .plusSeconds(
-
-                                properties.getResendCooldownSeconds());
-
-        if (LocalDateTime.now().isBefore(allowed)) {
-
-            publisher.publish(
-
-                    new OtpCooldownEvent(
-
-                            SecurityUtils.getCurrentUsername(),
-
-                            otp.getUserId().toString()));
-
-            throw new OtpCooldownException();
-        }
-
-    }
-
+   
     /**
      * Publishes OTP generated event.
      */

@@ -1,5 +1,6 @@
 package com.hms.notification.mfa.repository;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -45,5 +46,11 @@ extends JpaRepository<OtpCode, UUID> {
             MfaType type,
 
             OtpStatus status);
+    
+	List<OtpCode> findByUserIdAndStatus(
+
+			UUID userId,
+
+			OtpStatus status);
 
 }
