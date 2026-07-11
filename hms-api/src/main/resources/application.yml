@@ -70,3 +70,8 @@ security:
     sms-enabled: false
     max-resends: 3
     resend-cooldown-seconds: 30
+
+hms:
+  sms:
+  enabled: false
+  sender: HMS
