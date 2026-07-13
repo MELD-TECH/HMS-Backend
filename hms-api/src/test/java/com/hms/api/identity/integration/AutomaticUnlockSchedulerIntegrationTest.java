@@ -3,7 +3,6 @@ package com.hms.api.identity.integration;
 import static org.junit.Assert.*;
 
 import java.time.LocalDateTime;
-import java.util.UUID;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;

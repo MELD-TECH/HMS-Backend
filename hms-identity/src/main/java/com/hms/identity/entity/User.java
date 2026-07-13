@@ -98,4 +98,7 @@ public class User extends BaseEntity {
     @Column(name = "mfa_secret")
     private String mfaSecret;
     
+    @Column(name = "phone_number", length = 20)
+    private String phoneNumber;
+    
 }

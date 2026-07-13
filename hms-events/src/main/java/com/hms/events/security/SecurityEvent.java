@@ -1,22 +1,32 @@
 package com.hms.events.security;
 
+import org.springframework.context.ApplicationEvent;
 
 import lombok.Getter;
 
 @Getter
-public abstract class SecurityEvent
-extends ApplicationEvent {
+public abstract class SecurityEvent extends ApplicationEvent {
 
-protected SecurityEvent(
-    String username,
-    String entity,
-    String entityId) {
+    private final String username;
 
-super(
-        username,
-        entity,
-        entityId);
+    private final String entity;
 
-}
+    private final String entityId;
 
+    protected SecurityEvent(
+            String username,
+            String entity,
+            String entityId) {
+
+        // Spring requires exactly ONE source object
+        super(username);
+
+        this.username = username;
+        this.entity = entity;
+        this.entityId = entityId;
+    }
+
+    public abstract String action();
+
+    public abstract String details();
 }

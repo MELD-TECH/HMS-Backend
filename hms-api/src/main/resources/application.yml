@@ -73,5 +73,10 @@ security:
 
 hms:
   sms:
-  enabled: false
-  sender: HMS
+    enabled: false
+    sender: HMS
+
+  authentication:
+    pending-authentication-minutes: 5
+    resend-cooldown-seconds: 30
+    maximum-resends: 5

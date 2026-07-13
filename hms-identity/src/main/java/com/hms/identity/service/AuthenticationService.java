@@ -1,14 +1,16 @@
 package com.hms.identity.service;
 
-
-import com.hms.audit.security.dto.AuditRequest;
-import com.hms.audit.security.enums.AuditAction;
-import com.hms.audit.security.enums.AuditModule;
-import com.hms.audit.security.service.AuditService;
 import com.hms.common.exception.BusinessException;
 import com.hms.events.security.LoginFailureEvent;
 import com.hms.events.security.LoginSuccessEvent;
+import com.hms.events.security.MfaAuthenticationCompletedEvent;
+import com.hms.events.security.MfaVerifiedEvent;
 import com.hms.events.security.publisher.SecurityEventPublisher;
+import com.hms.identity.authentication.dto.CompleteAuthenticationRequest;
+import com.hms.identity.authentication.dto.ResendAuthenticationOtpRequest;
+import com.hms.identity.authentication.entity.PendingAuthentication;
+import com.hms.identity.authentication.repository.PendingAuthenticationRepository;
+import com.hms.identity.authentication.service.PendingAuthenticationService;
 import com.hms.identity.dto.LoginRequest;
 import com.hms.identity.dto.LoginResponse;
 import com.hms.identity.entity.User;
@@ -21,11 +23,19 @@ import com.hms.identity.session.entity.RefreshToken;
 import com.hms.identity.session.service.RefreshTokenService;
 import com.hms.identity.session.util.DeviceUtil;
 import com.hms.identity.session.util.IpUtil;
+import com.hms.notification.dto.GenerateOtpRequest;
+import com.hms.notification.dto.OtpResponse;
+import com.hms.notification.dto.ResendOtpRequest;
+import com.hms.notification.dto.VerifyOtpRequest;
+import com.hms.notification.mfa.enums.MfaType;
+import com.hms.notification.mfa.service.EmailOtpService;
+import com.hms.notification.sms.service.SmsOtpService;
 import com.hms.security.service.JwtService;
 
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 import org.springframework.security.authentication.*;
@@ -47,162 +57,505 @@ public class AuthenticationService {
     private final RefreshTokenService refreshTokenService;
     
     private final LoginAttemptService loginAttemptService;
-    
-    private final AuditService auditService;
    
     private final AccountLockService accountLockService;
     
     private final SecurityEventPublisher securityEventPublisher;
     
     private final PasswordExpiryService passwordExpiryService;
+   
+    private final PendingAuthenticationService pendingService;
+
+    private final EmailOtpService emailOtpService;
+
+    private final SmsOtpService smsOtpService;
     
-	public LoginResponse login(
-            LoginRequest request, HttpServletRequest servletRequest) {
+    private final PendingAuthenticationRepository pendingRepository;
+    
+    public LoginResponse login(
+            LoginRequest request,
+            HttpServletRequest servletRequest) {
 
-		User user =
-		        userRepository
-		                .findByUsername(request.username())
-		                .orElse(null);
+        User user =
+                userRepository
+                        .findByUsername(request.username())
+                        .orElse(null);
 
-		if (user != null) {
+        validateAccount(user);
 
-		    accountLockService.validate(user);
+        authenticateCredentials(request, user);
 
-		}
-		
-		try {
+        /*
+         * Authentication succeeded.
+         */
 
-		    authenticationManager.authenticate(
-		            new UsernamePasswordAuthenticationToken(
-		                    request.username(),
-		                    request.password()));
+        handleAuthenticationSuccess(user);
 
-		    passwordExpiryService.validate(user);
-		    
-		    loginAttemptService.loginSucceeded(request.username());
-		    
-		    securityEventPublisher.publish(
+        /*
+         * MFA?
+         */
 
-		            new LoginSuccessEvent(
+        if (Boolean.TRUE.equals(user.getMfaEnabled())) {
 
-		                    user.getUsername(),
+            return startMfaLogin(
+                    user,
+                    servletRequest);
+        }
 
-		                    user.getId().toString()));
+        /*
+         * Complete login immediately.
+         */
 
-		}
-		catch (BadCredentialsException ex) {
-
-			if (user != null) {
-			    loginAttemptService.loginFailed(request.username());
-			    
-			    securityEventPublisher.publish(
-
-			            new LoginFailureEvent(
-
-			                    user.getUsername(),
-
-			                    user.getId().toString()));
-			}
-
-		    throw ex;
-		}
-		
-        String ip =
-                IpUtil.ip(servletRequest);
-
-        String deviceName =
-                DeviceUtil.deviceName(servletRequest);
-
-        String userAgent =
-                servletRequest.getHeader("User-Agent");
-
-        String deviceId =
-                UUID.randomUUID().toString();
-        
-        RefreshToken session =
-                refreshTokenService.create(
-                        user,
-                        deviceId,
-                        deviceName,
-                        ip,
-                        userAgent);
-
-        
-        String token =
-                jwtService.generateToken(
-                        request.username(),
-                        session.getId()
-                );
-
-        return new LoginResponse(
-                token,
-                session.getToken(),
-                session.getId(),
-                "Bearer",
-                jwtService.extractExpiration(token),
-                jwtService.getRemainingSeconds(token)
-        );
+        return completeLogin(
+                user,
+                servletRequest);
     }
 	
-	@Transactional
-	public LoginResponse refresh(
 
-	        RefreshTokenRequest request,
+    @Transactional
+    public LoginResponse refresh(
+            RefreshTokenRequest request,
+            HttpServletRequest servletRequest) {
 
-	        HttpServletRequest servletRequest) {
+        RefreshToken existing =
+                refreshTokenService.validate(
+                        request.refreshToken());
 
-	    // Validate existing refresh token
-	    RefreshToken existingSession =
-	            refreshTokenService.validate(
-	                    request.refreshToken());
+        RefreshToken session =
+                refreshTokenService.rotate(
+                        request.refreshToken(),
+                        UUID.randomUUID().toString(),
+                        DeviceUtil.deviceName(servletRequest),
+                        IpUtil.ip(servletRequest),
+                        servletRequest.getHeader("User-Agent"));
 
-	    User user =
-	            existingSession.getUser();
+        String accessToken =
+                generateAccessToken(
+                        existing.getUser(),
+                        session);
 
-	    // Rotate the refresh token
-	    RefreshToken newSession =
-	            refreshTokenService.rotate(
+        return buildLoginResponse(
+                accessToken,
+                session);
+    }
+	
 
-	                    request.refreshToken(),
+    private LoginResponse startMfaLogin(
+            User user,
+            HttpServletRequest request) {
 
-	                    UUID.randomUUID().toString(),
+        PendingAuthentication pending =
 
-	                    DeviceUtil.deviceName(servletRequest),
+                pendingService.create(
 
-	                    IpUtil.ip(servletRequest),
+                        user.getId(),
 
-	                    servletRequest.getHeader("User-Agent")
-	            );
+                        user.getUsername(),
 
-	    // Generate a new access token
+                        user.getMfaType(),
+
+                        IpUtil.ip(request),
+
+                        request.getHeader("User-Agent"));
+
+        sendOtp(
+
+                user.getMfaType(),
+
+                new GenerateOtpRequest(
+
+                        user.getId(),
+
+                        resolveRecipient(user),
+
+                        user.getMfaType(),
+                        
+                        user.getUsername()
+                		));
+
+        return LoginResponse.builder()
+
+                .mfaRequired(true)
+
+                .challengeToken(
+                        pending.getChallengeToken())
+
+                .mfaType(
+                        pending.getMfaType())
+
+                .expiresAt(
+                        pending.getExpiresAt())
+
+                .build();
+    }
+    
+    
+	private String resolveRecipient(User user) {
+
+	    return switch (user.getMfaType()) {
+
+	        case EMAIL -> {
+
+	            if (user.getEmail() == null || user.getEmail().isBlank()) {
+	                throw new BusinessException(
+	                        "User does not have an email address configured.");
+	            }
+
+	            yield user.getEmail();
+	        }
+
+	        case SMS -> {
+
+	            if (user.getPhoneNumber() == null || user.getPhoneNumber().isBlank()) {
+	                throw new BusinessException(
+	                        "User does not have a phone number configured.");
+	            }
+
+	            yield user.getPhoneNumber();
+	        }
+
+	        default -> throw new BusinessException(
+	                "Unsupported MFA type.");
+	    };
+	}
+	
+	private void authenticateCredentials(
+	        LoginRequest request,
+	        User user) {
+
+	    try {
+
+	        authenticationManager.authenticate(
+
+	                new UsernamePasswordAuthenticationToken(
+
+	                        request.username(),
+
+	                        request.password()));
+
+	        passwordExpiryService.validate(user);
+
+	    }
+
+	    catch (BadCredentialsException ex) {
+
+	        if (user != null) {
+
+	            handleAuthenticationFailure(user);
+	        }
+
+	        throw ex;
+	    }
+	}
+	
+	private LoginResponse completeLogin(
+	        User user,
+	        HttpServletRequest request) {
+
+	    RefreshToken session =
+
+	            createSession(
+	                    user,
+	                    request);
+
 	    String accessToken =
-	            jwtService.generateToken(
 
-	                    user.getUsername(),
+	            generateAccessToken(
+	                    user,
+	                    session);
 
-	                    newSession.getId()
-	            );
-
-	    return new LoginResponse(
-
+	    return buildLoginResponse(
 	            accessToken,
+	            session);
+	}
+	
+	private RefreshToken createSession(
+	        User user,
+	        HttpServletRequest request) {
 
-	            newSession.getToken(),
-	            
-	            newSession.getId(),
+	    return refreshTokenService.create(
 
-	            "Bearer",
+	            user,
 
-	            jwtService.extractExpiration(
-	                    accessToken),
+	            UUID.randomUUID().toString(),
 
-	            jwtService.getRemainingSeconds(
-	                    accessToken)
-	    );
+	            DeviceUtil.deviceName(request),
+
+	            IpUtil.ip(request),
+
+	            request.getHeader("User-Agent"));
+	}
+	
+	private String generateAccessToken(
+
+	        User user,
+
+	        RefreshToken session) {
+
+	    return jwtService.generateToken(
+
+	            user.getUsername(),
+
+	            session.getId());
+
+	}
+	
+	private LoginResponse buildLoginResponse(
+
+	        String accessToken,
+
+	        RefreshToken session) {
+
+	    return LoginResponse.builder()
+
+	            .mfaRequired(false)
+
+	            .accessToken(accessToken)
+
+	            .refreshToken(session.getToken())
+
+	            .sessionId(session.getId())
+
+	            .tokenType("Bearer")
+
+	            .expiresAt(
+
+	                    jwtService.extractExpiration(
+
+	                            accessToken))
+
+	            .expiresInSeconds(
+
+	                    jwtService.getRemainingSeconds(
+
+	                            accessToken))
+
+	            .build();
+
+	}
+	
+	private void sendOtp(
+	        MfaType type,
+	        GenerateOtpRequest request) {
+
+	    switch (type) {
+
+	        case EMAIL -> emailOtpService.generate(request);
+
+	        case SMS -> smsOtpService.generate(request);
+
+	        default ->
+	                throw new BusinessException(
+	                        "Unsupported MFA type.");
+	    }
 	}
 	
 	
+	private void validateAccount(User user) {
 
+	    if (user == null) {
+	        return;
+	    }
+
+	    accountLockService.validate(user);
+	}
+
+	private void handleAuthenticationFailure(
+	        User user) {
+
+	    loginAttemptService.loginFailed(
+	            user.getUsername());
+
+	    securityEventPublisher.publish(
+
+	            new LoginFailureEvent(
+
+	                    user.getUsername(),
+
+	                    user.getId().toString()));
+	}
+	
+	private void handleAuthenticationSuccess(
+	        User user) {
+
+		loginAttemptService.resetLoginAttempts(user);
+		
+	    user.setLastLoginAt(
+	            LocalDateTime.now());
+
+	    userRepository.save(user);
+
+	    securityEventPublisher.publish(
+
+	            new LoginSuccessEvent(
+
+	                    user.getUsername(),
+
+	                    user.getId().toString()));
+	}
+	
+	@Transactional
+	public LoginResponse completeAuthentication(
+
+	        CompleteAuthenticationRequest request,
+
+	        HttpServletRequest servletRequest) {
+
+	    PendingAuthentication pending =
+
+	            pendingService.findByChallengeToken(
+
+	                    request.challengeToken());
+
+	    pendingService.validate(pending);
+
+	    User user =
+
+	            userRepository
+
+	                    .findById(pending.getUserId())
+
+	                    .orElseThrow();
+
+	    verifyOtp(
+
+	            user,
+
+	            pending,
+
+	            request.otp());
+
+	    pendingService.complete(pending);
+	    
+	   
+	    securityEventPublisher.publish(
+
+	    	    new MfaVerifiedEvent(
+
+	    	        user.getUsername(),
+
+	    	        user.getId().toString()));
+	    
+	    securityEventPublisher.publish(
+
+	            new MfaAuthenticationCompletedEvent(
+
+	                    user.getUsername(),
+
+	                    user.getId().toString()));
+
+	    handleAuthenticationSuccess(user);
+
+	    RefreshToken session =
+
+	            createSession(
+
+	                    user,
+
+	                    servletRequest);
+
+	    String accessToken =
+
+	            generateAccessToken(
+
+	                    user,
+
+	                    session);
+
+	    return buildLoginResponse(
+
+	            accessToken,
+
+	            session);
+	}
+	
+	private void verifyOtp(
+
+	        User user,
+
+	        PendingAuthentication pending,
+
+	        String otp) {
+
+	    VerifyOtpRequest request =
+
+	            new VerifyOtpRequest(
+
+	                    user.getId(),
+	                    otp,
+	                    pending.getMfaType(),
+	                    user.getUsername());
+
+	    switch (pending.getMfaType()) {
+
+	        case EMAIL ->
+
+	                emailOtpService.verify(request);
+
+	        case SMS ->
+
+	                smsOtpService.verify(request);
+
+	        default ->
+
+	                throw new BusinessException(
+
+	                        "Unsupported MFA type.");
+	    }
+	}
+	
+	@Transactional
+	public OtpResponse resendOtp(
+
+	        ResendAuthenticationOtpRequest request) {
+
+	    PendingAuthentication pending =
+
+	            pendingService.validateForResend(
+	                    request.challengeToken());
+	    	    
+	    User user =
+	            userRepository.findById(
+	                    pending.getUserId())
+	                    .orElseThrow();
+
+	    ResendOtpRequest otpRequest =
+
+	            new ResendOtpRequest(
+
+	                    user.getId(),
+	                    
+	                    pending.getMfaType(),
+	                    
+	                    resolveRecipient(user),
+	                    
+	            		user.getUsername());
+
+	    OtpResponse response =  switch (pending.getMfaType()) {
+
+	        case EMAIL ->
+	                emailOtpService.resend(otpRequest);
+
+	        case SMS ->
+	                smsOtpService.resend(otpRequest);
+
+	    	        default ->
+
+	    	                throw new BusinessException(
+
+	    	                        "Unsupported MFA type.");
+	    	 };	    
+
+	    	 pending.setResendCount(
+	    		        pending.getResendCount() + 1);
+
+	    		pending.setLastOtpSentAt(
+	    		        LocalDateTime.now());
+
+	    		pendingRepository.save(pending);
+
+	    		return response;
+	}
 }
 
 

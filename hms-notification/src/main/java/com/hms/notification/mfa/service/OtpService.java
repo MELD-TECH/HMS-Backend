@@ -67,7 +67,7 @@ public class OtpService {
 
         OtpCode savedOtp = repository.save(otp);
 
-        publishOtpGenerated(savedOtp);
+        publishOtpGenerated(request, savedOtp);
 
         return savedOtp;
     }
@@ -90,14 +90,14 @@ public class OtpService {
 
         markVerified(otp);
 
-        publishOtpVerified(otp);
+        publishOtpVerified(request, otp);
         
         }        
         catch (OtpExpiredException ex) {
 
             expire(otp);
 
-            publishOtpExpired(otp);
+            publishOtpExpired(request, otp);
 
             throw ex;
         }        
@@ -105,11 +105,11 @@ public class OtpService {
 
             markFailed(otp);
 
-            publishOtpFailed(otp);
+            publishOtpFailed(request, otp);
 
             if (otp.getAttempts() >= properties.getMaxAttempts()) {
 
-                publishOtpRetryLimitExceeded(otp);
+                publishOtpRetryLimitExceeded(request, otp);
 
             }
 
@@ -137,7 +137,7 @@ public class OtpService {
 
         incrementResend(activeOtp);
 
-        expireByResend(activeOtp);
+        expireByResend(request, activeOtp);
 
         OtpCode newOtp = generate(
 
@@ -147,7 +147,7 @@ public class OtpService {
 
                 new OtpResentEvent(
 
-                        SecurityUtils.getCurrentUsername(),
+                        request.initiatedBy(),
 
                         newOtp.getUserId().toString()));
 
@@ -196,7 +196,7 @@ public class OtpService {
         repository.save(otp);
     }
     
-    private void expireByResend(OtpCode otp) {
+    private void expireByResend(ResendOtpRequest request, OtpCode otp) {
 
         expire(otp);
 
@@ -204,7 +204,7 @@ public class OtpService {
 
             new OtpExpiredByResendEvent(
 
-                SecurityUtils.getCurrentUsername(),
+                request.initiatedBy(),
 
                 otp.getUserId().toString()));
     }
@@ -254,7 +254,10 @@ public class OtpService {
 
                 request.recipient(),
 
-                request.type());
+                request.type(),
+                
+                request.initiatedBy()
+        		);
 
     }
     
@@ -277,13 +280,13 @@ public class OtpService {
      * Publishes OTP generated event.
      */
     private void publishOtpGenerated(
-            OtpCode otp) {
+    		GenerateOtpRequest request, OtpCode otp) {
 
         publisher.publish(
 
                 new OtpGeneratedEvent(
 
-                        SecurityUtils.getCurrentUsername(),
+                		request.initiatedBy(),
 
                         otp.getUserId().toString()));
     }
@@ -292,47 +295,47 @@ public class OtpService {
      * Publishes OTP verified event.
      */
     private void publishOtpVerified(
-            OtpCode otp) {
+    		VerifyOtpRequest request, OtpCode otp) {
 
         publisher.publish(
 
                 new OtpVerifiedEvent(
 
-                        SecurityUtils.getCurrentUsername(),
+                		request.initiatedBy(),
 
                         otp.getUserId().toString()));
     }
    
-    private void publishOtpFailed(OtpCode otp) {
+    private void publishOtpFailed(VerifyOtpRequest request, OtpCode otp) {
     	
         publisher.publish(
 
                 new OtpVerificationFailedEvent(
 
-                        SecurityUtils.getCurrentUsername(),
+                		request.initiatedBy(),
 
                         otp.getUserId().toString()));
    	
     }
     
     private void publishOtpRetryLimitExceeded(
-            OtpCode otp) {
+    		VerifyOtpRequest request, OtpCode otp) {
 
         publisher.publish(
 
             new OtpRetryLimitExceededEvent(
 
-                SecurityUtils.getCurrentUsername(),
+            		request.initiatedBy(),
 
                 otp.getUserId().toString()));
     }
     
-    private void publishOtpExpired(OtpCode otp) {
+    private void publishOtpExpired(VerifyOtpRequest request, OtpCode otp) {
     	
         publisher.publish(
 
                 new OtpExpiredEvent(
-                        SecurityUtils.getCurrentUsername(),
+                		request.initiatedBy(),
 
                         otp.getUserId().toString()));
     	

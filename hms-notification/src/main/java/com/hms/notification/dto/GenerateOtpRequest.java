@@ -13,6 +13,9 @@ public record GenerateOtpRequest(
 
         String recipient,
 
-        MfaType type) {
+        MfaType type,
 
+        String initiatedBy
+
+) {
 }

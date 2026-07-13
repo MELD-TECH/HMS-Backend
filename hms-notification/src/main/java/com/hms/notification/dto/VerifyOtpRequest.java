@@ -13,6 +13,9 @@ public record VerifyOtpRequest(
 
         String code,
 
-        MfaType type) {
+        MfaType type,
 
+        String initiatedBy
+
+) {
 }

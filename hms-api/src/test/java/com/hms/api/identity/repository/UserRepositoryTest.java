@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.domain.EntityScan;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.context.annotation.Import;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.DynamicPropertyRegistry;
@@ -18,6 +19,7 @@ import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
+import com.hms.api.config.JpaConfig;
 import com.hms.identity.entity.User;
 import com.hms.identity.enums.UserStatus;
 import com.hms.identity.repository.UserRepository;
@@ -26,12 +28,9 @@ import com.hms.identity.repository.UserRepository;
 @ActiveProfiles("test")
 @Testcontainers
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
-@EnableJpaRepositories(
-        basePackages = "com.hms.identity.repository"
-)
-@EntityScan(
-        basePackages = "com.hms.identity.entity"
-)
+
+@Import(JpaConfig.class)
+
 class UserRepositoryTest {
 
 	@Container
@@ -69,12 +68,18 @@ class UserRepositoryTest {
                 .status(UserStatus.ACTIVE)
                 .build();
 
-        repository.save(user);
+        User saved = repository.save(user);
+
+        assertThat(saved.getCreatedAt()).isNotNull();
+        assertThat(saved.getUpdatedAt()).isNotNull();
 
         Optional<User> result =
                 repository.findByUsernameWithRolesAndPermissions(
                         "admin");
 
         assertThat(result).isPresent();
+        
+        assertThat(result.get().getCreatedAt()).isNotNull();
+        assertThat(result.get().getUpdatedAt()).isNotNull();
     }
 }

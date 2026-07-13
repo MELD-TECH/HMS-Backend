@@ -4,6 +4,7 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.hms.audit.security.dto.AuditRequest;
@@ -30,14 +31,31 @@ public class LoginAttemptService {
     @Transactional
     public void loginFailed(String username) {
 
-    	User user =
-    	        repository.findByUsername(username)
-    	                .orElseThrow();;
+        User user =
+                repository.findByUsername(username)
+                        .orElseThrow();
 
-        int attempts =
-                user.getFailedLoginAttempts() + 1;
+        int attempts = user.getFailedLoginAttempts() + 1;
 
         user.setFailedLoginAttempts(attempts);
+        
+        auditService.log(
+
+                AuditRequest.builder()
+
+                        .username(user.getUsername())
+
+                        .action(AuditAction.LOGIN_FAILED.name())
+
+                        .module(AuditModule.IDENTITY.name())
+
+                        .entity("USER")
+
+                        .entityId(user.getId().toString())
+
+                        .details("Invalid username or password")
+
+                        .build());
 
         if (attempts >= properties.getMaxFailedAttempts()) {
 
@@ -47,40 +65,28 @@ public class LoginAttemptService {
 
             user.setLockExpiresAt(
                     LocalDateTime.now()
-                            .plusMinutes(properties.getLockDurationMinutes()));
+                            .plusMinutes(
+                                    properties.getLockDurationMinutes()));
 
             auditService.log(
-
                     AuditRequest.builder()
-
                             .username(user.getUsername())
-
                             .action(AuditAction.ACCOUNT_LOCKED.name())
-
                             .module(AuditModule.IDENTITY.name())
-
                             .entity("USER")
-
                             .entityId(user.getId().toString())
-
                             .details("Maximum failed login attempts reached")
-
                             .build());
         }
+
+        repository.save(user);   
     }
 
-    public void loginSucceeded(String username) {
-
-    	User user =
-    	        repository.findByUsername(username)
-    	                .orElseThrow();
+    public void resetLoginAttempts(User user) {
 
         user.setFailedLoginAttempts(0);
-
         user.setAccountLocked(false);
-
         user.setLockedAt(null);
-
         user.setLockExpiresAt(null);
     }
 }

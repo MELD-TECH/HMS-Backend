@@ -53,27 +53,18 @@ public class AccountLockService {
          * lock expired
          */
 
-        automaticUnlock(user);
+        clearExpiredLock(user);
     }
 
-//    @Transactional
     public void automaticUnlock(User user) {
 
-//    	clearLock(user);
-    	
-        user.setAccountLocked(false);
-        user.setFailedLoginAttempts(0);
-        user.setLockedAt(null);
-        user.setLockExpiresAt(null);
+        clearLock(user);
 
         repository.save(user);
 
         publisher.publish(
-
                 new AccountAutoUnlockedEvent(
-
                         user.getUsername(),
-
                         user.getId().toString()));
     }
 
@@ -117,6 +108,16 @@ public class AccountLockService {
 
                         SecurityUtils.getCurrentUsername(),
 
+                        user.getId().toString()));
+    }
+   
+    public void clearExpiredLock(User user) {
+
+        clearLock(user);
+
+        publisher.publish(
+                new AccountAutoUnlockedEvent(
+                        user.getUsername(),
                         user.getId().toString()));
     }
     

@@ -64,5 +64,9 @@ public enum AuditAction {
 
     OTP_RESEND_COOLDOWN,
 
-    OTP_EXPIRED_BY_RESEND
+    OTP_EXPIRED_BY_RESEND,
+   
+    MFA_AUTHENTICATION_COMPLETED,
+    
+    MFA_VERIFIED
 }

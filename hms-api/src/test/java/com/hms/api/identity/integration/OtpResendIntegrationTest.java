@@ -121,11 +121,25 @@ class OtpResendIntegrationTest extends BaseIntegrationTest {
 
 	}
 	
+	private String getUsernameById(UUID userId) {
+
+		return userRepository
+
+				.findById(userId)
+
+				.orElseThrow()
+
+				.getUsername();
+
+	}
+	
 	@Test
 	void shouldResendOtp() {
 
 	    OtpCode otp =
 	            createOtp();
+	    
+	    String username = getUsernameById(otp.getUserId());
 
 	    ResendOtpRequest request =
 
@@ -134,8 +148,11 @@ class OtpResendIntegrationTest extends BaseIntegrationTest {
 	                    otp.getUserId(),	                    
 
 	                    MfaType.EMAIL,
+	                   
+	                    otp.getRecipient(),
 	                    
-	                    otp.getRecipient());
+	                    username
+	            		);
 
 	    OtpCode resent =
 	            otpService.resend(request);
@@ -156,6 +173,8 @@ class OtpResendIntegrationTest extends BaseIntegrationTest {
 	    OtpCode otp =
 	            createOtp();
 
+	    String username = getUsernameById(otp.getUserId());
+
 	    ResendOtpRequest request =
 
 	            new ResendOtpRequest(
@@ -163,8 +182,11 @@ class OtpResendIntegrationTest extends BaseIntegrationTest {
 	                    otp.getUserId(),	                    
 
 	                    MfaType.EMAIL,
+	                   
+	                    otp.getRecipient(),
 	                    
-	                    otp.getRecipient());
+	                    username
+	            		);
 
 	    otpService.resend(request);
 
@@ -192,15 +214,20 @@ class OtpResendIntegrationTest extends BaseIntegrationTest {
 	    OtpCode otp =
 	            createOtp();
 
-	    otpService.resend(
+	    String username = getUsernameById(otp.getUserId());
+
+	    ResendOtpRequest request =
+
 	            new ResendOtpRequest(
 
 	                    otp.getUserId(),	                    
 
 	                    MfaType.EMAIL,
+	                   
+	                    otp.getRecipient(),
 	                    
-	                    otp.getRecipient()));
-
+	                    username
+	            		);
 	    List<OtpCode> active =
 
 	            otpRepository
@@ -222,34 +249,24 @@ class OtpResendIntegrationTest extends BaseIntegrationTest {
 	@Test
 	void shouldIncrementResendCount() {
 
-	    OtpCode otp =
-	            createOtp();
+		OtpCode otp = createOtp();
 
-	    otpService.resend(
-	            new ResendOtpRequest(
+		String username = getUsernameById(otp.getUserId());
 
-	                    otp.getUserId(),	                    
+		ResendOtpRequest request =
+		        new ResendOtpRequest(
+		                otp.getUserId(),
+		                MfaType.EMAIL,
+		                otp.getRecipient(),
+		                username);
 
-	                    MfaType.EMAIL,
-	                    
-	                    otp.getRecipient()));
+		otpService.resend(request);
 
-	    OtpCode expired =
+		OtpCode expired =
+		        otpRepository.findById(otp.getId())
+		                     .orElseThrow();
 
-	            otpRepository
-
-	                    .findById(
-
-	                            otp.getId())
-
-	                    .orElseThrow();
-
-	    assertEquals(
-
-	            1,
-
-	            expired.getResendCount());
-
+		assertEquals(1, expired.getResendCount());
 	}
 	
 	@Test
@@ -264,20 +281,26 @@ class OtpResendIntegrationTest extends BaseIntegrationTest {
 
 	    otpRepository.save(otp);
 
+	    String username = getUsernameById(otp.getUserId());
+	    		
 	    assertThrows(
 
 	            OtpCooldownException.class,
 
 	            () ->
 
-	                    otpService.resend(
+	                    otpService.resend(            		
+	                    	    
 	            	            new ResendOtpRequest(
 
 	            	                    otp.getUserId(),	                    
 
 	            	                    MfaType.EMAIL,
 	            	                    
-	            	                    otp.getRecipient())
+	            	                    otp.getRecipient(),
+	            	                    
+	            	                    username
+	            	            		)
 	            	            ));
 
 	}
@@ -290,6 +313,8 @@ class OtpResendIntegrationTest extends BaseIntegrationTest {
 
 	    otp.setResendCount(5);
 
+	    String username = getUsernameById(otp.getUserId());
+	    
 	    otpRepository.save(otp);
 
 	    assertThrows(
@@ -305,7 +330,9 @@ class OtpResendIntegrationTest extends BaseIntegrationTest {
 
 	            	                    MfaType.EMAIL,
 	            	                    
-	            	                    otp.getRecipient())));
+	            	                    otp.getRecipient(),
+	            	                    
+	            	            		username)));
 
 	}
 	
@@ -315,15 +342,23 @@ class OtpResendIntegrationTest extends BaseIntegrationTest {
 	    OtpCode otp =
 	            createOtp();
 
-	    otpService.resend(
+	    String username = getUsernameById(otp.getUserId());
+
+	    ResendOtpRequest request =
+
 	            new ResendOtpRequest(
 
 	                    otp.getUserId(),	                    
 
 	                    MfaType.EMAIL,
+	                   
+	                    otp.getRecipient(),
 	                    
-	                    otp.getRecipient()));
+	                    username
+	            		);
 
+	    otpService.resend(request);
+	    
 	    AuditLog audit =
 
 	            findAudit(
@@ -346,15 +381,23 @@ class OtpResendIntegrationTest extends BaseIntegrationTest {
 	    OtpCode otp =
 	            createOtp();
 
-	    otpService.resend(
+	    String username = getUsernameById(otp.getUserId());
+
+	    ResendOtpRequest request =
 
 	            new ResendOtpRequest(
 
 	                    otp.getUserId(),	                    
 
 	                    MfaType.EMAIL,
+	                   
+	                    otp.getRecipient(),
 	                    
-	                    otp.getRecipient()));
+	                    username
+	            		);
+	    
+	    otpService.resend(request);
+	    
 	    AuditLog audit =
 
 	            findAudit(
@@ -381,6 +424,8 @@ class OtpResendIntegrationTest extends BaseIntegrationTest {
 
 	            LocalDateTime.now());
 
+	    String username = getUsernameById(otp.getUserId());
+	    
 	    otpRepository.save(otp);
 
 	    assertThrows(
@@ -396,7 +441,9 @@ class OtpResendIntegrationTest extends BaseIntegrationTest {
 
 	            	                    MfaType.EMAIL,
 	            	                    
-	            	                    otp.getRecipient())));
+	            	                    otp.getRecipient(),
+	            	                    
+	            	            		username)));
 
 	    AuditLog audit =
 
@@ -422,6 +469,8 @@ class OtpResendIntegrationTest extends BaseIntegrationTest {
 
 	    otp.setResendCount(5);
 
+	    String username = getUsernameById(otp.getUserId());
+	    
 	    otpRepository.save(otp);
 
 	    assertThrows(
@@ -437,7 +486,9 @@ class OtpResendIntegrationTest extends BaseIntegrationTest {
 
 	            	                    MfaType.EMAIL,
 	            	                    
-	            	                    otp.getRecipient())));
+	            	                    otp.getRecipient(),
+	            	                    
+	            	            		username)));
 
 	    AuditLog audit =
 
@@ -461,15 +512,23 @@ class OtpResendIntegrationTest extends BaseIntegrationTest {
 	    OtpCode otp =
 	            createOtp();
 
-	    otpService.resend(
+	    String username = getUsernameById(otp.getUserId());
+
+	    ResendOtpRequest request =
+
 	            new ResendOtpRequest(
 
 	                    otp.getUserId(),	                    
 
 	                    MfaType.EMAIL,
+	                   
+	                    otp.getRecipient(),
 	                    
-	                    otp.getRecipient()));
+	                    username
+	            		);
 
+	    otpService.resend(request);
+	    
 	    AuditLog audit =
 
 	            findAudit(
@@ -480,7 +539,7 @@ class OtpResendIntegrationTest extends BaseIntegrationTest {
 
 	    assertEquals(
 
-	            "SYSTEM",
+	            "admin",
 
 	            audit.getUsername());
 
@@ -492,15 +551,23 @@ class OtpResendIntegrationTest extends BaseIntegrationTest {
 	    OtpCode otp =
 	            createOtp();
 
-	    otpService.resend(
+	    String username = getUsernameById(otp.getUserId());
+
+	    ResendOtpRequest request =
+
 	            new ResendOtpRequest(
 
 	                    otp.getUserId(),	                    
 
 	                    MfaType.EMAIL,
+	                   
+	                    otp.getRecipient(),
 	                    
-	                    otp.getRecipient()));
+	                    username
+	            		);
 
+	    otpService.resend(request);
+	    
 	    AuditLog audit =
 
 	            findAudit(
@@ -523,14 +590,23 @@ class OtpResendIntegrationTest extends BaseIntegrationTest {
 	    OtpCode otp =
 	            createOtp();
 
-	    otpService.resend(
+	    String username = getUsernameById(otp.getUserId());
+
+	    ResendOtpRequest request =
+
 	            new ResendOtpRequest(
 
 	                    otp.getUserId(),	                    
 
 	                    MfaType.EMAIL,
+	                   
+	                    otp.getRecipient(),
 	                    
-	                    otp.getRecipient()));
+	                    username
+	            		);
+	    
+	    otpService.resend(request);
+	    
 	    AuditLog audit =
 
 	            findAudit(

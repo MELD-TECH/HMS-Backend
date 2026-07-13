@@ -9,7 +9,9 @@ public enum OtpStatus {
     EXPIRED,
 
     FAILED,
+   
+    ACTIVE,
     
-    ACTIVE
+    CANCELLED
 
 }

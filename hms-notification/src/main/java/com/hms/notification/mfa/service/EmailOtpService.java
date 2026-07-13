@@ -5,6 +5,7 @@ import org.springframework.stereotype.Service;
 import com.hms.notification.dto.GenerateOtpRequest;
 import com.hms.notification.dto.OtpResponse;
 import com.hms.notification.dto.ResendOtpRequest;
+import com.hms.notification.dto.VerifyOtpRequest;
 import com.hms.notification.mfa.entity.OtpCode;
 
 import lombok.RequiredArgsConstructor;
@@ -63,6 +64,12 @@ public class EmailOtpService {
 
                 .build();
 
+    }
+    
+    public void verify(
+            VerifyOtpRequest request) {
+
+        otpService.verify(request);
     }
 
 }

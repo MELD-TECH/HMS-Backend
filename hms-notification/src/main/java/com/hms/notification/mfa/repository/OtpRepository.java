@@ -52,5 +52,7 @@ extends JpaRepository<OtpCode, UUID> {
 			UUID userId,
 
 			OtpStatus status);
+	
+	Optional<OtpCode> findTopByUserIdOrderByCreatedAtDesc(UUID userId);
 
 }
