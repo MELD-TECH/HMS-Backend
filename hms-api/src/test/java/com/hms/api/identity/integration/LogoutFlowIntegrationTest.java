@@ -8,6 +8,7 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.jdbc.Sql;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.hms.api.test.BaseIntegrationTest;
 
 @ActiveProfiles("test")
@@ -23,14 +24,10 @@ class LogoutFlowIntegrationTest
     void shouldLogout()
             throws Exception {
 
-        String login =
-                login();
+        JsonNode auth = authenticateAndReturnTokens("admin", "password");
 
-        String refresh =
-                objectMapper
-                        .readTree(login)
-                        .get("refreshToken")
-                        .asText();
+        String refreshToken =
+                auth.get("refreshToken").asText();
 
         mockMvc.perform(
 
@@ -43,7 +40,7 @@ class LogoutFlowIntegrationTest
                         {
                             "refreshToken":"%s"
                         }
-                        """.formatted(refresh))
+                        """.formatted(refreshToken))
 
         )
 
@@ -55,15 +52,10 @@ class LogoutFlowIntegrationTest
     void refreshAfterLogoutShouldFail()
             throws Exception {
 
-        String login =
-                login();
+        JsonNode auth = authenticateAndReturnTokens("admin", "password");
 
-        String refresh =
-                objectMapper
-                        .readTree(login)
-                        .get("refreshToken")
-                        .asText();
-
+        String refreshToken =
+                auth.get("refreshToken").asText();
         mockMvc.perform(
 
                 post("/auth/logout")
@@ -75,7 +67,7 @@ class LogoutFlowIntegrationTest
                         {
                             "refreshToken":"%s"
                         }
-                        """.formatted(refresh))
+                        """.formatted(refreshToken))
         );
 
         mockMvc.perform(
@@ -89,7 +81,7 @@ class LogoutFlowIntegrationTest
                         {
                             "refreshToken":"%s"
                         }
-                        """.formatted(refresh))
+                        """.formatted(refreshToken))
         )
 
         .andExpect(status().isUnauthorized());

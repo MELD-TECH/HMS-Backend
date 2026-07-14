@@ -48,14 +48,11 @@ class RefreshTokenFlowIntegrationTest
 
                         .getContentAsString();
 
-        JsonNode login =
-                objectMapper.readTree(
-                        loginResponse);
+        JsonNode auth = authenticateAndReturnTokens("admin", "password");
 
         String refreshToken =
-                login.get("refreshToken")
-                        .asText();
-
+                auth.get("refreshToken").asText();
+        
         mockMvc.perform(
 
                 post("/auth/refresh")

@@ -423,14 +423,10 @@ class PasswordResetIntegrationTest
     void shouldRevokeSessionsAfterReset()
             throws Exception {
 
-        String login = login();
+        JsonNode auth = authenticateAndReturnTokens("admin", "password");
 
-        JsonNode json =
-                objectMapper.readTree(login);
-
-        String refresh =
-                json.get("refreshToken")
-                        .asText();
+        String refreshToken =
+                auth.get("refreshToken").asText();
 
         mockMvc.perform(
 
@@ -475,7 +471,7 @@ class PasswordResetIntegrationTest
                            "refreshToken":"%s"
                         }
                         """.formatted(
-                                refresh)))
+                                refreshToken)))
 
                 .andExpect(status().isUnauthorized());
     }

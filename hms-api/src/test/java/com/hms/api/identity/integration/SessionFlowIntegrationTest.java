@@ -61,22 +61,19 @@ class SessionFlowIntegrationTest
     void shouldLoginAndReturnTokens()
             throws Exception {
 
-        String response = login();
-
-        JsonNode json =
-                objectMapper.readTree(response);
+        JsonNode auth = authenticateAndReturnTokens("admin", "password");
 
         assertTrue(
-                json.has("accessToken")
+        		auth.has("accessToken")
         );
 
         assertTrue(
-                json.has("refreshToken")
+        		auth.has("refreshToken")
         );
 
         assertEquals(
                 "Bearer",
-                json.get("tokenType").asText()
+                auth.get("tokenType").asText()
         );
     }
     
@@ -84,17 +81,13 @@ class SessionFlowIntegrationTest
     void shouldRefreshAccessToken()
             throws Exception {
 
-        String login =
-                login();
-
-        JsonNode json =
-                objectMapper.readTree(login);
+        JsonNode auth = authenticateAndReturnTokens("admin", "password");
 
         String refresh =
-                json.get("refreshToken").asText();
+        		auth.get("refreshToken").asText();
 
         String oldAccess =
-                json.get("accessToken").asText();
+        		auth.get("accessToken").asText();
 
         String refreshed =
                 mockMvc.perform(
@@ -135,14 +128,10 @@ class SessionFlowIntegrationTest
     void shouldRotateRefreshToken()
             throws Exception {
 
-        String login =
-                login();
+        JsonNode auth = authenticateAndReturnTokens("admin", "password");
 
-        JsonNode json =
-                objectMapper.readTree(login);
-
-        String refresh =
-                json.get("refreshToken").asText();
+        String refreshToken =
+                auth.get("refreshToken").asText();
 
         String refreshed =
                 mockMvc.perform(
@@ -156,7 +145,7 @@ class SessionFlowIntegrationTest
                                 {
                                     "refreshToken":"%s"
                                 }
-                                """.formatted(refresh))
+                                """.formatted(refreshToken))
                 )
 
                 .andExpect(status().isOk())
@@ -171,7 +160,7 @@ class SessionFlowIntegrationTest
                 objectMapper.readTree(refreshed);
 
         assertNotEquals(
-                refresh,
+                refreshToken,
                 rotated.get("refreshToken").asText()
         );
     }
@@ -180,14 +169,10 @@ class SessionFlowIntegrationTest
     void oldRefreshTokenShouldFail()
             throws Exception {
 
-        String login =
-                login();
+        JsonNode auth = authenticateAndReturnTokens("admin", "password");
 
-        JsonNode json =
-                objectMapper.readTree(login);
-
-        String refresh =
-                json.get("refreshToken").asText();
+        String refreshToken =
+                auth.get("refreshToken").asText();
 
         mockMvc.perform(
 
@@ -199,7 +184,7 @@ class SessionFlowIntegrationTest
                         {
                           "refreshToken":"%s"
                         }
-                        """.formatted(refresh))
+                        """.formatted(refreshToken))
         );
 
         mockMvc.perform(
@@ -212,7 +197,7 @@ class SessionFlowIntegrationTest
                         {
                           "refreshToken":"%s"
                         }
-                        """.formatted(refresh))
+                        """.formatted(refreshToken))
         )
 
         .andExpect(status().isUnauthorized());
@@ -222,12 +207,10 @@ class SessionFlowIntegrationTest
     void shouldListActiveSessions()
             throws Exception {
 
-        String login = login();
+        JsonNode auth = authenticateAndReturnTokens("admin", "password");
 
         String token =
-                objectMapper.readTree(login)
-                        .get("accessToken")
-                        .asText();
+        		auth.get("accessToken").asText();
 
         mockMvc.perform(
 
@@ -251,18 +234,14 @@ class SessionFlowIntegrationTest
     void shouldRevokeSingleSession()
             throws Exception {
 
-        String login =
-                login();
-
-        JsonNode json =
-                objectMapper.readTree(login);
+        JsonNode auth = authenticateAndReturnTokens("admin", "password");
 
         String token =
-                json.get("accessToken").asText();
+        		auth.get("accessToken").asText();
 
         UUID sessionId =
                 UUID.fromString(
-                        json.get("sessionId").asText());
+                		auth.get("sessionId").asText());
 
         mockMvc.perform(
 
@@ -281,15 +260,10 @@ class SessionFlowIntegrationTest
     void shouldRejectExpiredRefreshToken()
             throws Exception {
 
-        String login =
-                login();
-
-        JsonNode json =
-                objectMapper.readTree(login);
+        JsonNode auth = authenticateAndReturnTokens("admin", "password");
 
         String refreshToken =
-                json.get("refreshToken")
-                    .asText();
+                auth.get("refreshToken").asText();
 
         RefreshToken token =
                 refreshTokenRepository

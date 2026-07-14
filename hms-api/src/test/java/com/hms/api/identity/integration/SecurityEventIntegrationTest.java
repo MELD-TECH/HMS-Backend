@@ -315,14 +315,10 @@ class SecurityEventIntegrationTest
 	void shouldPublishRefreshTokenRevoked()
 	        throws Exception {
 
-	    String login =
-	            login();
+        JsonNode auth = authenticateAndReturnTokens("admin", "password");
 
-	    JsonNode json =
-	            objectMapper.readTree(login);
-
-	    String refresh =
-	            json.get("refreshToken").asText();
+        String refreshToken =
+                auth.get("refreshToken").asText();
 
 	    mockMvc.perform(
 
@@ -334,7 +330,7 @@ class SecurityEventIntegrationTest
 	                    {
 	                        "refreshToken":"%s"
 	                    }
-	                    """.formatted(refresh)))
+	                    """.formatted(refreshToken)))
 
 	            .andExpect(status().isNoContent());
 

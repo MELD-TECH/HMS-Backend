@@ -41,23 +41,6 @@ class MfaAuthenticationIntegrationTest extends BaseIntegrationTest {
     @Autowired
     private PendingAuthenticationRepository pendingRepository;
 
-    @Autowired
-    private ObjectMapper objectMapper;
-
-    @JsonInclude(JsonInclude.Include.NON_NULL)
-    private JsonNode loginResponse()
-            throws Exception {
-
-        return objectMapper.readTree(super.login());
-
-    }
-    
-    private String challengeToken(JsonNode response) {
-
-        return response.get("challengeToken").asText();
-
-    }
-    
     private User admin() {
 
         return userRepository
@@ -85,7 +68,7 @@ class MfaAuthenticationIntegrationTest extends BaseIntegrationTest {
     void shouldReturnChallengeTokenWhenMfaEnabled()
             throws Exception {
 
-        JsonNode response = loginResponse();
+        JsonNode response = login("admin", "password");
 
         assertTrue(
                 response.get("mfaRequired").asBoolean());
@@ -117,7 +100,7 @@ class MfaAuthenticationIntegrationTest extends BaseIntegrationTest {
     void shouldCreatePendingAuthentication()
             throws Exception {
 
-        login();
+    	loginResponse();
 
         PendingAuthentication pending = pending();
 
@@ -150,7 +133,7 @@ class MfaAuthenticationIntegrationTest extends BaseIntegrationTest {
     void shouldStoreClientIp()
             throws Exception {
 
-        login();
+    	loginResponse();
 
         PendingAuthentication pending = pending();
 
@@ -199,19 +182,17 @@ class MfaAuthenticationIntegrationTest extends BaseIntegrationTest {
     void shouldGenerateUniqueChallengeTokens()
             throws Exception {
 
-        JsonNode first = loginResponse();
+        JsonNode firstAuth = login("admin", "password");
 
         String firstToken =
-
-                challengeToken(first);
+        		firstAuth.get("challengeToken").asText();
 
         pendingRepository.deleteAll();
 
-        JsonNode second = loginResponse();
+        JsonNode secondAuth = login("admin", "password");
 
         String secondToken =
-
-                challengeToken(second);
+        		secondAuth.get("challengeToken").asText();
 
         assertNotEquals(
 
