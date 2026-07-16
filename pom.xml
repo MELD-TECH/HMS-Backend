@@ -13,7 +13,9 @@
 	<version>0.0.1-SNAPSHOT</version>
 	<name>hms-backend</name>
 	<packaging>pom</packaging>
-	<description/>
+	<description>
+    	Hospital Management System Backend
+	</description>
 	<url/>
 	<licenses>
 		<license/>
@@ -30,30 +32,30 @@
 	<properties>
 		<java.version>21</java.version>
 	</properties>
-	<dependencies>
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter</artifactId>
-		</dependency>
-
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-test</artifactId>
-			<scope>test</scope>
-		</dependency>
-	</dependencies>
 
 	<modules>
 	    <module>hms-common</module>
 	    <module>hms-security</module>
-<!--	    <module>hms-audit</module>-->
 	    <module>hms-api</module>
 	    <module>hms-identity</module>
 	    <module>hms-audit</module>
 	    <module>hms-events</module>
 	    <module>hms-notification</module>
+	    <module>hms-patient</module>
 	</modules>
 
+    <dependencies>
+      	<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-web</artifactId>
+		</dependency>
+		
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-test</artifactId>
+			<scope>test</scope>
+		</dependency>
+    </dependencies>
 	<build>
 		<plugins>
 			<plugin>

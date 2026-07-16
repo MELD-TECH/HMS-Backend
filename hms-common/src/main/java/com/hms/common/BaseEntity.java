@@ -18,11 +18,12 @@ import jakarta.persistence.Version;
 import lombok.Getter;
 import lombok.Setter;
 
-	@Getter
-	@Setter
-	@MappedSuperclass
-	@EntityListeners(AuditingEntityListener.class)
-	public abstract class BaseEntity {
+
+@Getter
+@Setter
+@MappedSuperclass
+@EntityListeners(AuditingEntityListener.class)
+public abstract class BaseEntity {
 
 	    @Id
 	    @GeneratedValue(strategy = GenerationType.UUID)

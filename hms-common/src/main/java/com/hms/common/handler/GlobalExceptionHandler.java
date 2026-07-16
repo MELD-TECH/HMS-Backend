@@ -3,6 +3,9 @@ package com.hms.common.handler;
 import com.hms.common.ErrorResponse;
 import com.hms.common.exception.AccountLockedException;
 import com.hms.common.exception.BusinessException;
+import com.hms.common.exception.DuplicatePatientEmailException;
+import com.hms.common.exception.DuplicatePatientPhoneException;
+import com.hms.common.exception.InvalidPatientDateOfBirthException;
 import com.hms.common.exception.InvalidRefreshTokenException;
 import com.hms.common.exception.OtpCooldownException;
 import com.hms.common.exception.OtpResendLimitExceededException;
@@ -244,6 +247,57 @@ public class GlobalExceptionHandler {
 				.body(
 						ErrorResponse.builder()
 						.code("OTP_RESEND_LIMIT_EXCEEDED")
+						.message(ex.getMessage())
+						.path(request.getRequestURI())
+						.timestamp(LocalDateTime.now())
+						.build());
+       		
+    }
+    
+    @ExceptionHandler(
+    		DuplicatePatientEmailException.class)
+    public ResponseEntity<ErrorResponse> handleDuplicatePatientEmail(
+    		DuplicatePatientEmailException ex,
+            HttpServletRequest request) {
+
+		return ResponseEntity.status(HttpStatus.CONFLICT)
+				.body(
+						ErrorResponse.builder()
+						.code("DUPLICATE_EMAIL_EXCEPTION")
+						.message(ex.getMessage())
+						.path(request.getRequestURI())
+						.timestamp(LocalDateTime.now())
+						.build());
+        		
+    }
+    
+    @ExceptionHandler(
+    		DuplicatePatientPhoneException.class)
+    public ResponseEntity<ErrorResponse> handleDuplicatePatientPhone(
+    		DuplicatePatientPhoneException ex,
+            HttpServletRequest request) {
+
+		return ResponseEntity.status(HttpStatus.CONFLICT)
+				.body(
+						ErrorResponse.builder()
+						.code("DUPLICATE_PHONE_EXCEPTION")
+						.message(ex.getMessage())
+						.path(request.getRequestURI())
+						.timestamp(LocalDateTime.now())
+						.build());
+        		
+    }
+    
+    @ExceptionHandler(
+    		InvalidPatientDateOfBirthException.class)
+    public ResponseEntity<ErrorResponse> handleInvalidDateOfBirth(
+    		InvalidPatientDateOfBirthException ex,
+            HttpServletRequest request) {
+
+		return ResponseEntity.status(HttpStatus.CONFLICT)
+				.body(
+						ErrorResponse.builder()
+						.code("INVALID_DOB_EXCEPTION")
 						.message(ex.getMessage())
 						.path(request.getRequestURI())
 						.timestamp(LocalDateTime.now())
