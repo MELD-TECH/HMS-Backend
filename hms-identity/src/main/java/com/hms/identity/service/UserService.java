@@ -1,16 +1,8 @@
 package com.hms.identity.service;
 
 import com.hms.audit.security.annotation.Auditable;
-import com.hms.audit.security.dto.AuditRequest;
-import com.hms.audit.security.enums.AuditAction;
-import com.hms.audit.security.enums.AuditModule;
-import com.hms.audit.security.event.AuditEventPublisher;
-import com.hms.audit.security.service.AuditService;
-import com.hms.audit.security.util.AuditContext;
-import com.hms.audit.security.util.JsonDiffUtil;
 import com.hms.common.exception.BusinessException;
 import com.hms.common.exception.ResourceNotFoundException;
-import com.hms.events.security.PasswordChangedEvent;
 import com.hms.events.security.RoleAssignedEvent;
 import com.hms.events.security.RoleRemovedEvent;
 import com.hms.events.security.UserActivatedEvent;
@@ -41,8 +33,7 @@ public class UserService {
 
     private final UserRepository repository;
     private final RoleRepository roleRepository;
-    private final AuditService auditService;
-    private final JsonDiffUtil jsonUtil;
+
 
     private final PasswordEncoder passwordEncoder;
 
@@ -52,15 +43,11 @@ public class UserService {
             UserRepository repository,
             PasswordEncoder passwordEncoder,
             RoleRepository roleRepository,
-            AuditService auditService,
-            JsonDiffUtil jsonUtil,
             SecurityEventPublisher securityEventPublisher) {
 
         this.repository = repository;
         this.passwordEncoder = passwordEncoder;
         this.roleRepository = roleRepository;
-        this.auditService = auditService;
-        this.jsonUtil = jsonUtil;
         this.securityEventPublisher = securityEventPublisher;
 
     }

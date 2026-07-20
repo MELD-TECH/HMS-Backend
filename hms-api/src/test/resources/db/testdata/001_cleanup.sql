@@ -9,6 +9,8 @@ DELETE FROM identity_schema.user_roles;
 DELETE FROM identity_schema.users
 WHERE username='admin';
 
+DELETE FROM patient_schema.patients;
+
 UPDATE identity_schema.users
 
 SET

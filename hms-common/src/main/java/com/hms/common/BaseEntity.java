@@ -9,18 +9,24 @@ import org.springframework.data.annotation.LastModifiedBy;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.EntityListeners;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.MappedSuperclass;
 import jakarta.persistence.Version;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.experimental.SuperBuilder;
 
-
+@SuperBuilder
 @Getter
 @Setter
+@NoArgsConstructor
+@AllArgsConstructor
 @MappedSuperclass
 @EntityListeners(AuditingEntityListener.class)
 public abstract class BaseEntity {
@@ -30,18 +36,23 @@ public abstract class BaseEntity {
 	    private UUID id;
 
 	    @CreatedDate
+	    @Column(name = "created_at", nullable = false, updatable = false)
 	    private LocalDateTime createdAt;
 
 	    @LastModifiedDate
+	    @Column(name = "updated_at")
 	    private LocalDateTime updatedAt;
 
-//	    @CreatedBy
-//	    private String createdBy;
-//
-//	    @LastModifiedBy
-//	    private String updatedBy;
-	    
+	    @CreatedBy
+	    @Column(name = "created_by", length = 100, updatable = false)
+	    private String createdBy;
+
+	    @LastModifiedBy
+	    @Column(name = "updated_by", length = 100)
+	    private String updatedBy;
+
 	    @Version
+	    @Column(name = "version")
 	    private Long version;
 	}
 

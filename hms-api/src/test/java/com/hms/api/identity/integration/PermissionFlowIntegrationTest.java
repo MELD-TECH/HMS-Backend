@@ -37,15 +37,15 @@ class PermissionFlowIntegrationTest
                         )
                         .content("""
                         {
-                            "code":"PATIENT_CREATE",
-                            "description":"Create Patient"
+                            "code":"DISPENSE_MEDICATION",
+                            "description":"Dispense Medication"
                         }
                         """)
         )
         .andExpect(status().isOk())
         .andExpect(
                 jsonPath("$.code")
-                        .value("PATIENT_CREATE")
+                        .value("DISPENSE_MEDICATION")
         );
     }
 

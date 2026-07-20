@@ -7,6 +7,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.time.LocalDate;
+import java.util.UUID;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -90,6 +91,8 @@ public class PatientServiceTest {
 	    patient =
 	            Patient.builder()
 
+	                    .id(UUID.randomUUID())
+	                    
 	                    .patientNumber(
 	                            "HMS-2026-000001")
 

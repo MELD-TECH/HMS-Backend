@@ -36,26 +36,15 @@ class RoleRepositoryTest
         extends PostgreSQLContainerConfig {
 
 
-	@Container
-	static PostgreSQLContainer<?> postgres =
-	        new PostgreSQLContainer<>("postgres:17-alpine");
-	
-    @DynamicPropertySource
-    static void configure(DynamicPropertyRegistry registry) {
-        registry.add(
-                "spring.datasource.url",
-                postgres::getJdbcUrl
-        );
-        registry.add(
-                "spring.datasource.username",
-                postgres::getUsername
-        );
-        registry.add(
-                "spring.datasource.password",
-                postgres::getPassword
-        );
-    }
-    
+	/*
+	 * @Container static PostgreSQLContainer<?> postgres = new
+	 * PostgreSQLContainer<>("postgres:17-alpine");
+	 * 
+	 * @DynamicPropertySource static void configure(DynamicPropertyRegistry
+	 * registry) { registry.add( "spring.datasource.url", postgres::getJdbcUrl );
+	 * registry.add( "spring.datasource.username", postgres::getUsername );
+	 * registry.add( "spring.datasource.password", postgres::getPassword ); }
+	 */
     @Autowired
     RoleRepository repository;
 

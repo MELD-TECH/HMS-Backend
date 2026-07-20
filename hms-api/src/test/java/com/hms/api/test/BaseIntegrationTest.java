@@ -14,9 +14,14 @@ import com.hms.notification.mfa.repository.OtpRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.ResultActions;
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -41,6 +46,7 @@ public abstract class BaseIntegrationTest
 	
 	@Autowired
 	private OtpRepository otpRepository;
+	
     
 	protected String obtainAdminToken()
 	        throws Exception {
@@ -214,7 +220,7 @@ public abstract class BaseIntegrationTest
                 "admin",
                 "password");
     }
-    
+   
     protected JsonNode authenticateSecurityAdmin()
             throws Exception {
 
@@ -222,5 +228,101 @@ public abstract class BaseIntegrationTest
                 "security-admin",
                 "password");
     }
+    
+    protected String asJson(Object object)
+            throws Exception {
+
+        return objectMapper.writeValueAsString(object);
+    }
+    
+    protected ResultActions performAuthenticatedRequest(
+            HttpMethod method,
+            String uri,
+            Object request)
+            throws Exception {
+
+        return mockMvc.perform(
+
+                MockMvcRequestBuilders.request(
+                        method,
+                        uri)
+
+                        .header(
+                                HttpHeaders.AUTHORIZATION,
+                                bearerToken())
+
+                        .contentType(
+                                MediaType.APPLICATION_JSON)
+
+                        .content(
+                                asJson(request)));
+    }
+    
+    protected ResultActions performAuthenticatedRequest(
+            HttpMethod method,
+            String uri)
+            throws Exception {
+
+        String token = bearerToken();
+
+        return mockMvc.perform(
+                MockMvcRequestBuilders.request(method, uri)
+                        .header(
+                                HttpHeaders.AUTHORIZATION,
+                                token));
+    }
+    
+    protected ResultActions performWithoutAuthentication(
+            HttpMethod method,
+            String uri,
+            Object request)
+            throws Exception {
+
+        return mockMvc.perform(
+                MockMvcRequestBuilders.request(method, uri)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(
+                        		asJson(request)
+                                ));
+    }
+    
+    protected ResultActions performAsSecurityAdmin(
+            HttpMethod method,
+            String uri,
+            Object request)
+            throws Exception {
+
+        String token = bearerSecurityAdminToken();
+
+        return mockMvc.perform(
+                MockMvcRequestBuilders.request(method, uri)
+                        .header(
+                                HttpHeaders.AUTHORIZATION,
+                                token)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(
+                        		asJson(request)
+                                        ));
+    }
+    
+    protected <T, ID> T reload(
+            JpaRepository<T, ID> repository,
+            ID id) {
+
+        return repository.findById(id)
+
+                .orElseThrow();
+    }
+    
+	protected String bearerToken() throws Exception{
+
+	    return "Bearer " + obtainAdminToken();
+	}
+	
+	protected String bearerSecurityAdminToken() throws Exception{
+
+	    return "Bearer " + obtainSecurityAdminToken();
+	}
+	
    
 }

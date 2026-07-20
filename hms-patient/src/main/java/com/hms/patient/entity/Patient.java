@@ -1,7 +1,11 @@
 package com.hms.patient.entity;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.Objects;
 import java.util.UUID;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import com.hms.common.BaseEntity;
 import com.hms.patient.enums.BloodGroup;
@@ -13,6 +17,7 @@ import com.hms.patient.enums.PatientStatus;
 import jakarta.persistence.*;
 
 import lombok.*;
+import lombok.experimental.SuperBuilder;
 
 @Entity
 @Table(
@@ -42,11 +47,12 @@ import lombok.*;
             )
         }
 )
+
+@SuperBuilder
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
 public class Patient extends BaseEntity {
 
     @Column(nullable = false, unique = true, length = 30)
@@ -100,7 +106,89 @@ public class Patient extends BaseEntity {
      */
     private UUID profilePhotoId;
     
-//    @Column(length = 250)
-//    private String fullName;
+    @Column(length = 500)
+    private String archiveReason;
 
+    private LocalDateTime archivedAt;
+
+    @Column(length = 100)
+    private String archivedBy;
+    
+    @Column(name = "archived")
+    @Builder.Default
+    private Boolean archived = false;
+    
+    @Column(length = 200)
+    private String causeOfDeath;
+
+    @Column(length = 1000)
+    private String deceasedNotes;
+   
+    @Column(length = 500)
+    private String deceasedReversalReason;
+
+    private LocalDateTime deceasedReversedAt;
+
+    @Column(length = 100)
+    private String deceasedReversedBy;
+    
+    @Transient
+    public String getFullName() {
+
+        return Stream.of(
+                firstName,
+                middleName,
+                lastName)
+                .filter(Objects::nonNull)
+                .map(String::trim)
+                .filter(s -> !s.isBlank())
+                .collect(Collectors.joining(" "));
+    }
+    
+    public void restore() {
+
+        if (!Boolean.TRUE.equals(archived)) {
+            throw new IllegalStateException(
+                    "Patient is not archived.");
+        }
+
+        if (status == PatientStatus.DECEASED) {
+            throw new IllegalStateException(
+                    "Deceased patients cannot be restored.");
+        }
+
+        archived = false;
+
+        archivedAt = null;
+
+        archivedBy = null;
+
+        archiveReason = null;
+
+        status = PatientStatus.ACTIVE;
+    }
+    
+    public void reverseDeceased(
+
+            String username,
+
+            String reason) {
+
+        if (!Boolean.TRUE.equals(deceased)) {
+
+            throw new IllegalStateException(
+
+                    "Patient is not deceased.");
+        }
+
+        deceased = false;
+
+        status = PatientStatus.ACTIVE;
+
+        deceasedReversedBy = username;
+
+        deceasedReversedAt = LocalDateTime.now();
+
+        deceasedReversalReason = reason;
+    }
 }

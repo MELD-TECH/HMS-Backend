@@ -1,6 +1,7 @@
 package com.hms.patient.validation;
 
 import java.time.LocalDate;
+import java.util.Objects;
 
 import org.springframework.stereotype.Component;
 
@@ -18,71 +19,55 @@ public class PatientRegistrationValidator {
 
     private final PatientRepository repository;
 
-    public void validate(
 
-            CreatePatientRequest request) {
+    public void validate(CreatePatientRequest request) {
+
+        Objects.requireNonNull(
+                request,
+                "Patient registration request must not be null.");
+
+        validateDateOfBirth(request);
 
         validateEmail(request);
 
         validatePhone(request);
-
-        validateDateOfBirth(request);
-
     }
-    
-    private void validateEmail(
 
-            CreatePatientRequest request) {
+    private void validateEmail(CreatePatientRequest request) {
 
-        if (request.getEmail() == null) {
+        String email = request.getEmail();
 
+        if (email == null || email.isBlank()) {
             return;
-
         }
 
-        if (repository.existsByEmailIgnoreCase(
+        email = email.trim();
 
-                request.getEmail())) {
-
-            throw new DuplicatePatientEmailException();
-
+        if (repository.existsByEmailIgnoreCase(email)) {
+            throw new DuplicatePatientEmailException(request.getEmail());
         }
-
     }
-    
-    private void validatePhone(
 
-            CreatePatientRequest request) {
+    private void validatePhone(CreatePatientRequest request) {
 
-        if (request.getPhoneNumber() == null) {
+        String phone = request.getPhoneNumber();
 
+        if (phone == null || phone.isBlank()) {
             return;
-
         }
 
-        if (repository.existsByPhoneNumber(
+        phone = phone.trim();
 
-                request.getPhoneNumber())) {
-
-            throw new DuplicatePatientPhoneException();
-
+        if (repository.existsByPhoneNumber(phone)) {
+            throw new DuplicatePatientPhoneException(request.getPhoneNumber());
         }
-
     }
-    
-    private void validateDateOfBirth(
 
-            CreatePatientRequest request) {
+    private void validateDateOfBirth(CreatePatientRequest request) {
 
-        if (request.getDateOfBirth()
-
-                .isAfter(LocalDate.now())) {
-
-            throw new InvalidPatientDateOfBirthException();
-
+        if (request.getDateOfBirth().isAfter(LocalDate.now())) {
+            throw new InvalidPatientDateOfBirthException(request.getDateOfBirth());
         }
-
     }
-    
     
 }

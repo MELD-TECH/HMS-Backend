@@ -1,6 +1,7 @@
 package com.hms.patient.dto.response;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 import com.hms.patient.enums.BloodGroup;
@@ -53,5 +54,25 @@ public class PatientResponse {
     private PatientStatus status;
 
     private Boolean deceased;
+    
+    private String archiveReason;
+
+    private LocalDateTime archivedAt;
+
+    private String archivedBy;
+    
+    private LocalDate deceasedDate;
+    
+    private LocalDateTime createdAt;
+
+    private LocalDateTime updatedAt;
+
+    private String createdBy;
+
+    private String updatedBy;
+    
+    private String causeOfDeath;
+    
+    private String deceasedNotes;
 
 }

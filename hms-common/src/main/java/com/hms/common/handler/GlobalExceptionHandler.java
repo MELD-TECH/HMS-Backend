@@ -10,6 +10,12 @@ import com.hms.common.exception.InvalidRefreshTokenException;
 import com.hms.common.exception.OtpCooldownException;
 import com.hms.common.exception.OtpResendLimitExceededException;
 import com.hms.common.exception.PasswordExpiredException;
+import com.hms.common.exception.PatientAlreadyActiveException;
+import com.hms.common.exception.PatientAlreadyArchivedException;
+import com.hms.common.exception.PatientAlreadyDeceasedException;
+import com.hms.common.exception.PatientArchivedException;
+import com.hms.common.exception.PatientDeceasedException;
+import com.hms.common.exception.PatientNotFoundException;
 import com.hms.common.exception.ResourceNotFoundException;
 
 import jakarta.servlet.http.HttpServletRequest;
@@ -263,7 +269,7 @@ public class GlobalExceptionHandler {
 		return ResponseEntity.status(HttpStatus.CONFLICT)
 				.body(
 						ErrorResponse.builder()
-						.code("DUPLICATE_EMAIL_EXCEPTION")
+						.code("DUPLICATE_EMAIL")
 						.message(ex.getMessage())
 						.path(request.getRequestURI())
 						.timestamp(LocalDateTime.now())
@@ -280,7 +286,7 @@ public class GlobalExceptionHandler {
 		return ResponseEntity.status(HttpStatus.CONFLICT)
 				.body(
 						ErrorResponse.builder()
-						.code("DUPLICATE_PHONE_EXCEPTION")
+						.code("DUPLICATE_PHONE")
 						.message(ex.getMessage())
 						.path(request.getRequestURI())
 						.timestamp(LocalDateTime.now())
@@ -297,11 +303,130 @@ public class GlobalExceptionHandler {
 		return ResponseEntity.status(HttpStatus.CONFLICT)
 				.body(
 						ErrorResponse.builder()
-						.code("INVALID_DOB_EXCEPTION")
+						.code("INVALID_DOB")
 						.message(ex.getMessage())
 						.path(request.getRequestURI())
 						.timestamp(LocalDateTime.now())
 						.build());
-        		
+       	
     }
+    
+    @ExceptionHandler(
+    		PatientNotFoundException.class)
+    public ResponseEntity<ErrorResponse> handlePatientNotFound(
+    		PatientNotFoundException ex,
+            HttpServletRequest request) {
+
+		return ResponseEntity.status(HttpStatus.NOT_FOUND)
+				.body(
+						ErrorResponse.builder()
+						.code("PATIENT_NOT_FOUND")
+						.message(ex.getMessage())
+						.path(request.getRequestURI())
+						.timestamp(LocalDateTime.now())
+						.build());
+       		
+    }
+    
+    @ExceptionHandler(PatientArchivedException.class)
+    public ResponseEntity<ErrorResponse> handleArchived(
+            PatientArchivedException ex,
+            HttpServletRequest request) {
+
+        return ResponseEntity.status(HttpStatus.CONFLICT)
+
+                .body(ErrorResponse.builder()
+
+                        .code("PATIENT_ARCHIVED")
+
+                        .message(ex.getMessage())
+
+                        .path(request.getRequestURI())
+
+                        .timestamp(LocalDateTime.now())
+
+                        .build());
+    }
+    
+    @ExceptionHandler(PatientDeceasedException.class)
+    public ResponseEntity<ErrorResponse> handleDeceased(
+    		PatientDeceasedException ex,
+            HttpServletRequest request) {
+
+        return ResponseEntity.status(HttpStatus.CONFLICT)
+
+                .body(ErrorResponse.builder()
+
+                        .code("PATIENT_DECEASED")
+
+                        .message(ex.getMessage())
+
+                        .path(request.getRequestURI())
+
+                        .timestamp(LocalDateTime.now())
+
+                        .build());
+    }
+    
+    @ExceptionHandler(PatientAlreadyArchivedException.class)
+    public ResponseEntity<ErrorResponse> handleDuplicateArchivedPatient(
+    		PatientAlreadyArchivedException ex,
+            HttpServletRequest request) {
+
+        return ResponseEntity.status(HttpStatus.CONFLICT)
+
+                .body(ErrorResponse.builder()
+
+                        .code("PATIENT_DUPLICATE")
+
+                        .message(ex.getMessage())
+
+                        .path(request.getRequestURI())
+
+                        .timestamp(LocalDateTime.now())
+
+                        .build());
+    }
+    
+    @ExceptionHandler(PatientAlreadyDeceasedException.class)
+    public ResponseEntity<ErrorResponse> handleAlreadyDeceased(
+    		PatientAlreadyDeceasedException ex,
+            HttpServletRequest request) {
+
+        return ResponseEntity.status(HttpStatus.CONFLICT)
+
+                .body(ErrorResponse.builder()
+
+                        .code("PATIENT_ALREADY_DECEASED")
+
+                        .message(ex.getMessage())
+
+                        .path(request.getRequestURI())
+
+                        .timestamp(LocalDateTime.now())
+
+                        .build());
+    }
+    
+    @ExceptionHandler(PatientAlreadyActiveException.class)
+    public ResponseEntity<ErrorResponse> handleAlreadyActivated(
+    		PatientAlreadyActiveException ex,
+            HttpServletRequest request) {
+
+        return ResponseEntity.status(HttpStatus.CONFLICT)
+
+                .body(ErrorResponse.builder()
+
+                        .code("PATIENT_ALREADY_ACTIVATED")
+
+                        .message(ex.getMessage())
+
+                        .path(request.getRequestURI())
+
+                        .timestamp(LocalDateTime.now())
+
+                        .build());
+    }
+    
+    
 }

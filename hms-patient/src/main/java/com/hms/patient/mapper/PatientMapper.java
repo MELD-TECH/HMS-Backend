@@ -9,7 +9,9 @@ import java.util.stream.Stream;
 import org.springframework.stereotype.Component;
 
 import com.hms.patient.dto.request.CreatePatientRequest;
+import com.hms.patient.dto.request.UpdatePatientRequest;
 import com.hms.patient.dto.response.PatientResponse;
+import com.hms.patient.dto.response.PatientSummaryResponse;
 import com.hms.patient.entity.Patient;
 import com.hms.patient.enums.PatientStatus;
 
@@ -44,33 +46,82 @@ public class PatientMapper {
                 .status(PatientStatus.ACTIVE)
 
                 .deceased(false)
-
+                
                 .build();
     }
     
-    public PatientResponse toResponse(
+    public PatientResponse toResponse(Patient patient) {
+
+        return PatientResponse.builder()
+
+                .id(patient.getId())
+
+                .patientNumber(patient.getPatientNumber())
+
+                .firstName(patient.getFirstName())
+
+                .middleName(patient.getMiddleName())
+
+                .lastName(patient.getLastName())
+
+                .fullName(buildFullName(patient))
+
+                .dateOfBirth(patient.getDateOfBirth())
+
+                .age(calculateAge(patient))
+
+                .gender(patient.getGender())
+
+                .maritalStatus(patient.getMaritalStatus())
+
+                .bloodGroup(patient.getBloodGroup())
+
+                .genotype(patient.getGenotype())
+
+                .email(patient.getEmail())
+
+                .phoneNumber(patient.getPhoneNumber())
+
+                .status(patient.getStatus())
+
+                .deceased(patient.getDeceased())
+               
+                .archivedAt(patient.getArchivedAt())
+                
+                .archivedBy(patient.getArchivedBy())
+                
+                .archiveReason(patient.getArchiveReason())
+                
+                .deceasedDate(patient.getDeceasedDate())
+
+                .createdAt(patient.getCreatedAt())
+               
+                .createdBy(patient.getCreatedBy())
+               
+                .updatedAt(patient.getUpdatedAt())
+                
+                .updatedBy(patient.getUpdatedBy())
+                
+                .causeOfDeath(patient.getCauseOfDeath())
+
+                .deceasedNotes(patient.getDeceasedNotes())
+                
+                .build();
+    }
+    
+    public PatientSummaryResponse toSummary(
 
             Patient patient) {
 
-        return PatientResponse.builder()
+        return PatientSummaryResponse
+
+                .builder()
 
                 .id(patient.getId())
 
                 .patientNumber(
 
                         patient.getPatientNumber())
-
-                .firstName(
-
-                        patient.getFirstName())
-
-                .middleName(
-
-                        patient.getMiddleName())
-
-                .lastName(
-
-                        patient.getLastName())
 
                 .fullName(
 
@@ -84,53 +135,60 @@ public class PatientMapper {
 
                         patient.getGender())
 
-                .bloodGroup(
-
-                        patient.getBloodGroup())
-
-                .genotype(
-
-                        patient.getGenotype())
-
                 .phoneNumber(
 
                         patient.getPhoneNumber())
-
-                .email(
-
-                        patient.getEmail())
 
                 .status(
 
                         patient.getStatus())
 
-                .deceased(
-
-                        patient.getDeceased())
-
                 .build();
-
     }
     
-    private Integer calculateAge(
+    public void updateEntity(
+            Patient patient,
+            UpdatePatientRequest request) {
 
-            Patient patient) {
+        patient.setFirstName(request.getFirstName());
+
+        patient.setMiddleName(request.getMiddleName());
+
+        patient.setLastName(request.getLastName());
+
+        patient.setDateOfBirth(request.getDateOfBirth());
+
+        patient.setGender(request.getGender());
+
+        patient.setMaritalStatus(request.getMaritalStatus());
+
+        patient.setBloodGroup(request.getBloodGroup());
+
+        patient.setGenotype(request.getGenotype());
+
+        patient.setEmail(request.getEmail());
+
+        patient.setPhoneNumber(request.getPhoneNumber());
+    }
+    
+    private Integer calculateAge(Patient patient) {
+
+        if (patient == null) {
+            return null;
+        }
+        
+        if (patient.getDateOfBirth() == null) {
+            return null;
+        }
 
         return Period
-
                 .between(
-
                         patient.getDateOfBirth(),
-
                         LocalDate.now())
-
                 .getYears();
-
     }
     
-    private String buildFullName(
-
-            Patient patient) {
+    private String buildFullName(Patient patient) {
 
         return Stream.of(
 
@@ -140,17 +198,12 @@ public class PatientMapper {
 
                 patient.getLastName())
 
-                .filter(
+                .filter(Objects::nonNull)
 
-                        Objects::nonNull)
+                .map(String::trim)
 
-                .filter(
+                .filter(s -> !s.isBlank())
 
-                        s -> !s.isBlank())
-
-                .collect(
-
-                        Collectors.joining(" "));
-
+                .collect(Collectors.joining(" "));
     }
 }

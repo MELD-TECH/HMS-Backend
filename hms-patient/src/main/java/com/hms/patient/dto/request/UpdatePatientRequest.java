@@ -11,6 +11,8 @@ import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Past;
+import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -19,21 +21,24 @@ import lombok.Setter;
 
 @Getter
 @Setter
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
 public class UpdatePatientRequest {
 
     @NotBlank
+    @Size(max = 80)
     private String firstName;
 
+    @Size(max = 80)
     private String middleName;
 
     @NotBlank
+    @Size(max = 80)
     private String lastName;
 
-    @Past
     @NotNull
+    @Past
     private LocalDate dateOfBirth;
 
     @NotNull
@@ -51,6 +56,9 @@ public class UpdatePatientRequest {
     @Email
     private String email;
 
+    @NotBlank
+    @Pattern(
+        regexp = "^(\\+234|0)[789][01][0-9]{8}$",
+        message = "Invalid phone number")
     private String phoneNumber;
-
 }
