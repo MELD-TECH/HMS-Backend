@@ -24,8 +24,8 @@ public class PatientApprovalMapper {
 	    PatientReverseDeceasedRequest entity =
 	            new PatientReverseDeceasedRequest();
 
-	    entity.setPatientId(
-	            patient.getId());
+	    entity.setPatient(
+	            patient);
 
 	    entity.setPatientNumber(
 	            patient.getPatientNumber());
@@ -50,7 +50,7 @@ public class PatientApprovalMapper {
 
 	            .id(entity.getId())
 
-	            .patientId(entity.getPatientId())
+	            .patientId(entity.getId())
 
 	            .patientNumber(entity.getPatientNumber())
 

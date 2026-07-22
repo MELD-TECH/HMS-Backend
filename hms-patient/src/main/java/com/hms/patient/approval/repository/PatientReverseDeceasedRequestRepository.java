@@ -26,4 +26,8 @@ extends JpaRepository<
 			UUID patientId,
 
 			ApprovalStatus status);
+	
+	Optional<PatientReverseDeceasedRequest>	
+	findByPatientId(
+			UUID id);
 }

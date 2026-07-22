@@ -72,7 +72,11 @@ public class PatientResponse {
     private String updatedBy;
     
     private String causeOfDeath;
-    
+  
     private String deceasedNotes;
+    
+    private Boolean archived; 
+    
+    private Long version;
 
 }

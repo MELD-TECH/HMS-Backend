@@ -7,7 +7,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.hms.common.exception.BusinessException;
+import com.hms.common.exception.PatientAlreadyPendingRequestException;
 import com.hms.common.exception.PatientNotFoundException;
+import com.hms.common.exception.ResourceNotFoundException;
 import com.hms.events.security.patient.PatientDeceasedReversalApprovedEvent;
 import com.hms.events.security.patient.PatientDeceasedReversalRejectedEvent;
 import com.hms.events.security.patient.PatientDeceasedReversalRequestedEvent;
@@ -64,7 +66,7 @@ public class PatientApprovalServiceImpl
                 patientId,
                 ApprovalStatus.PENDING)) {
 
-            throw new BusinessException(
+            throw new PatientAlreadyPendingRequestException(
                     "A pending reversal request already exists.");
         }
         
@@ -98,20 +100,20 @@ public class PatientApprovalServiceImpl
             UUID requestId,
             ApproveReverseDeceasedRequest request) {
 
-        PatientReverseDeceasedRequest approval =
-                requestRepository.findById(requestId)
-                .orElseThrow(() ->
-                        new BusinessException(
-                                "Approval request not found."));
-
+    	PatientReverseDeceasedRequest approval =
+    	        requestRepository.findById(requestId)
+    	        .orElseThrow(() ->
+    	                new ResourceNotFoundException(
+    	                        "Reverse deceased approval request not found."));
+    	
         approvalValidator.validateApproval(approval);
 
         Patient patient =
                 patientRepository.findById(
-                        approval.getPatientId())
+                        approval.getPatient().getId())
                 .orElseThrow(() ->
                         new PatientNotFoundException(
-                                approval.getPatientId()));
+                                approval.getPatient().getId()));
 
         lifecycleManager.reverseDeceased(
                 patient,
@@ -144,11 +146,11 @@ public class PatientApprovalServiceImpl
             UUID requestId,
             RejectReverseDeceasedRequest request) {
 
-        PatientReverseDeceasedRequest approval =
-                requestRepository.findById(requestId)
-                .orElseThrow(() ->
-                        new BusinessException(
-                                "Approval request not found."));
+    	PatientReverseDeceasedRequest approval =
+    	        requestRepository.findById(requestId)
+    	        .orElseThrow(() ->
+    	                new ResourceNotFoundException(
+    	                        "Reverse deceased approval request not found."));
 
         approvalValidator.validateApproval(approval);
 
@@ -175,7 +177,7 @@ public class PatientApprovalServiceImpl
 
                         request.getRequestedBy(),
 
-                        request.getPatientId().toString(),
+                        request.getPatient().getId().toString(),
 
                         request.getPatientNumber(),
 
@@ -211,7 +213,7 @@ public class PatientApprovalServiceImpl
 
                         SecurityUtils.getCurrentUsername(),
 
-                        request.getPatientId().toString(),
+                        request.getPatient().getId().toString(),
 
                         request.getPatientNumber(),
 

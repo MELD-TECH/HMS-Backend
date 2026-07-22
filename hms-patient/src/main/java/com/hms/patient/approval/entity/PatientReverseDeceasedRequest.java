@@ -5,11 +5,16 @@ import java.util.UUID;
 
 import com.hms.common.BaseEntity;
 import com.hms.patient.approval.enums.ApprovalStatus;
+import com.hms.patient.entity.Patient;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ForeignKey;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -29,9 +34,6 @@ import lombok.experimental.SuperBuilder;
 @AllArgsConstructor
 public class PatientReverseDeceasedRequest
         extends BaseEntity {
-
-    @Column(nullable = false)
-    private UUID patientId;
 
     @Column(nullable = false, length = 30)
     private String patientNumber;
@@ -58,9 +60,16 @@ public class PatientReverseDeceasedRequest
 
     @Column(length = 500)
     private String rejectionReason;
-    
+   
     @Column(length = 500)
     private String approvalComment;
+    
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(
+            name = "patient_id",
+            nullable = false,
+            foreignKey = @ForeignKey(name = "fk_reverse_request_patient"))
+    private Patient patient;
     
     public void approve(
             String approver,

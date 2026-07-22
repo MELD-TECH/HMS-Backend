@@ -89,8 +89,10 @@ public class PatientMapper {
                 .archivedAt(patient.getArchivedAt())
                 
                 .archivedBy(patient.getArchivedBy())
-                
+               
                 .archiveReason(patient.getArchiveReason())
+                
+                .archived(patient.getArchived())
                 
                 .deceasedDate(patient.getDeceasedDate())
 

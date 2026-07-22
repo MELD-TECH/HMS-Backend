@@ -55,7 +55,15 @@ public abstract class BaseIntegrationTest
 	            "admin",
 	            "password");
 	}
-   
+  
+	protected String obtainToken(String username)
+	        throws Exception {
+
+	    return authenticate(
+	            username,
+	            "password");
+	}  
+	
 	protected JsonNode login(
 	        String username,
 	        String password)
@@ -324,5 +332,19 @@ public abstract class BaseIntegrationTest
 	    return "Bearer " + obtainSecurityAdminToken();
 	}
 	
-   
+  
+	protected String obtainDoctorToken()
+	        throws Exception {
+
+	    return authenticate(
+	            "doctor",
+	            "password");
+	}
+
+	protected String bearerToken(String username)
+	        throws Exception {
+
+	    return "Bearer " + obtainToken(username);
+	}
+	
 }

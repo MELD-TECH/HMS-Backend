@@ -26,6 +26,8 @@ public class PatientLifecycleManagerImpl
         patient.setArchivedAt(LocalDateTime.now());
 
         patient.setArchivedBy(username);
+        
+        patient.setArchived(true);
     }
 
     @Override
@@ -66,14 +68,8 @@ public class PatientLifecycleManagerImpl
     public void restore(
             Patient patient) {
 
-        patient.setStatus(
-                PatientStatus.ACTIVE);
 
-        patient.setArchiveReason(null);
-
-        patient.setArchivedAt(null);
-
-        patient.setArchivedBy(null);
+    	patient.restore();
     }
     
     @Override

@@ -113,7 +113,7 @@ class PatientUpdateIntegrationTest
 	void shouldUpdatePatient() throws Exception {
 
 	    UpdatePatientRequest request =
-	            PatientTestDataFactory.validUpdateRequest();
+	            PatientTestDataFactory.validUpdateRequest(patient);
 
 	    update(patient.getId(), request)
 
@@ -164,7 +164,7 @@ class PatientUpdateIntegrationTest
 	void shouldUpdateFirstName() throws Exception {
 
 	    UpdatePatientRequest request =
-	            PatientTestDataFactory.validUpdateRequest();
+	            PatientTestDataFactory.validUpdateRequest(patient);
 
 	    request.setFirstName(
 	            request.getFirstName());
@@ -185,7 +185,7 @@ class PatientUpdateIntegrationTest
 	void shouldUpdateMiddleName() throws Exception {
 
 	    UpdatePatientRequest request =
-	            PatientTestDataFactory.validUpdateRequest();
+	            PatientTestDataFactory.validUpdateRequest(patient);
 
 	    request.setMiddleName(
 	            request.getMiddleName());
@@ -206,7 +206,7 @@ class PatientUpdateIntegrationTest
 	void shouldUpdateLastName() throws Exception {
 
 	    UpdatePatientRequest request =
-	            PatientTestDataFactory.validUpdateRequest();
+	            PatientTestDataFactory.validUpdateRequest(patient);
 
 	    request.setLastName(
 	            request.getLastName());
@@ -227,7 +227,7 @@ class PatientUpdateIntegrationTest
 	void shouldUpdateEmail() throws Exception {
 
 	    UpdatePatientRequest request =
-	            PatientTestDataFactory.validUpdateRequest();
+	            PatientTestDataFactory.validUpdateRequest(patient);
 
 	    request.setEmail(
 	            UniqueTestData.email());
@@ -248,7 +248,7 @@ class PatientUpdateIntegrationTest
 	void shouldUpdatePhoneNumber() throws Exception {
 
 	    UpdatePatientRequest request =
-	            PatientTestDataFactory.validUpdateRequest();
+	            PatientTestDataFactory.validUpdateRequest(patient);
 
 	    request.setPhoneNumber(
 	            UniqueTestData.phoneNumber());
@@ -269,7 +269,7 @@ class PatientUpdateIntegrationTest
 	void shouldUpdateDateOfBirth() throws Exception {
 
 	    UpdatePatientRequest request =
-	            PatientTestDataFactory.validUpdateRequest();
+	            PatientTestDataFactory.validUpdateRequest(patient);
 
 	    request.setDateOfBirth(
 	            request.getDateOfBirth());
@@ -290,7 +290,7 @@ class PatientUpdateIntegrationTest
 	void shouldUpdateGender() throws Exception {
 
 	    UpdatePatientRequest request =
-	            PatientTestDataFactory.validUpdateRequest();
+	            PatientTestDataFactory.validUpdateRequest(patient);
 
 	    request.setGender(
 	            request.getGender());
@@ -311,7 +311,7 @@ class PatientUpdateIntegrationTest
 	void shouldUpdateMaritalStatus() throws Exception {
 
 	    UpdatePatientRequest request =
-	            PatientTestDataFactory.validUpdateRequest();
+	            PatientTestDataFactory.validUpdateRequest(patient);
 
 	    request.setMaritalStatus(
 	            request.getMaritalStatus());
@@ -332,7 +332,7 @@ class PatientUpdateIntegrationTest
 	void shouldUpdateBloodGroup() throws Exception {
 
 	    UpdatePatientRequest request =
-	            PatientTestDataFactory.validUpdateRequest();
+	            PatientTestDataFactory.validUpdateRequest(patient);
 
 	    request.setBloodGroup(
 	            request.getBloodGroup());
@@ -353,7 +353,7 @@ class PatientUpdateIntegrationTest
 	void shouldUpdateGenotype() throws Exception {
 
 	    UpdatePatientRequest request =
-	            PatientTestDataFactory.validUpdateRequest();
+	            PatientTestDataFactory.validUpdateRequest(patient);
 
 	    request.setGenotype(
 	            request.getGenotype());
@@ -375,7 +375,7 @@ class PatientUpdateIntegrationTest
 
 	    update(
 	            patient.getId(),
-	            PatientTestDataFactory.blankFirstNameRequest())
+	            PatientTestDataFactory.blankFirstNameRequest(patient))
 
 	            .andExpect(status().isBadRequest());
 	}
@@ -385,7 +385,7 @@ class PatientUpdateIntegrationTest
 
 	    update(
 	            patient.getId(),
-	            PatientTestDataFactory.blankLastNameRequest())
+	            PatientTestDataFactory.blankLastNameRequest(patient))
 
 	            .andExpect(status().isBadRequest());
 	}
@@ -395,7 +395,7 @@ class PatientUpdateIntegrationTest
 
 	    update(
 	            patient.getId(),
-	            PatientTestDataFactory.invalidEmailRequest())
+	            PatientTestDataFactory.invalidEmailRequest(patient))
 
 	            .andExpect(status().isBadRequest());
 	}
@@ -405,7 +405,7 @@ class PatientUpdateIntegrationTest
 
 	    update(
 	            patient.getId(),
-	            PatientTestDataFactory.invalidPhoneRequest())
+	            PatientTestDataFactory.invalidPhoneRequest(patient))
 
 	            .andExpect(status().isBadRequest());
 	}
@@ -415,7 +415,7 @@ class PatientUpdateIntegrationTest
 
 	    update(
 	            patient.getId(),
-	            PatientTestDataFactory.futureDobRequest())
+	            PatientTestDataFactory.futureDobRequest(patient))
 
 	            .andExpect(status().isBadRequest());
 	}
@@ -434,7 +434,7 @@ class PatientUpdateIntegrationTest
 
 	            PatientTestDataFactory
 	                    .duplicateEmailRequest(
-	                            another.getEmail()))
+	                            another.getEmail(), patient))
 
 	            .andExpect(status().isConflict());
 	}
@@ -452,7 +452,7 @@ class PatientUpdateIntegrationTest
 
 	            PatientTestDataFactory
 	                    .duplicatePhoneRequest(
-	                            another.getPhoneNumber()))
+	                            another.getPhoneNumber(), patient))
 
 	            .andExpect(status().isConflict());
 	}
@@ -465,7 +465,7 @@ class PatientUpdateIntegrationTest
 
 	            UUID.randomUUID(),
 
-	            PatientTestDataFactory.validUpdateRequest())
+	            PatientTestDataFactory.validUpdateRequest(patient))
 
 	            .andExpect(status().isNotFound());
 	}
@@ -478,7 +478,7 @@ class PatientUpdateIntegrationTest
 
 	            patient.getId(),
 
-	            PatientTestDataFactory.validUpdateRequest())
+	            PatientTestDataFactory.validUpdateRequest(patient))
 
 	            .andExpect(status().isUnauthorized());
 	}
@@ -491,7 +491,7 @@ class PatientUpdateIntegrationTest
 
 	            patient.getId(),
 
-	            PatientTestDataFactory.validUpdateRequest())
+	            PatientTestDataFactory.validUpdateRequest(patient))
 
 	            .andExpect(status().isForbidden());
 	}
@@ -508,7 +508,7 @@ class PatientUpdateIntegrationTest
 
 	            archived.getId(),
 
-	            PatientTestDataFactory.validUpdateRequest())
+	            PatientTestDataFactory.validUpdateRequest(patient))
 
 	            .andExpect(status().isConflict());
 	}
@@ -525,7 +525,7 @@ class PatientUpdateIntegrationTest
 
 	            deceased.getId(),
 
-	            PatientTestDataFactory.validUpdateRequest())
+	            PatientTestDataFactory.validUpdateRequest(patient))
 
 	            .andExpect(status().isConflict());
 	}
@@ -536,7 +536,7 @@ class PatientUpdateIntegrationTest
 	        throws Exception {
 
 	    UpdatePatientRequest request =
-	            PatientTestDataFactory.validUpdateRequest();
+	            PatientTestDataFactory.validUpdateRequest(patient);
 
 	    update(patient.getId(), request)
 
@@ -560,9 +560,6 @@ class PatientUpdateIntegrationTest
 	    assertThat(updated.getUpdatedAt())
         .isAfter(updated.getCreatedAt());
 
-	}
-	
-	
-	
+	}	
 	
 }

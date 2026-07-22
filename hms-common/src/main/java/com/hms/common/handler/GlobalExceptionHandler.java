@@ -3,17 +3,25 @@ package com.hms.common.handler;
 import com.hms.common.ErrorResponse;
 import com.hms.common.exception.AccountLockedException;
 import com.hms.common.exception.BusinessException;
+import com.hms.common.exception.DuplicatePatientContactException;
 import com.hms.common.exception.DuplicatePatientEmailException;
 import com.hms.common.exception.DuplicatePatientPhoneException;
+import com.hms.common.exception.InvalidPatientContactException;
 import com.hms.common.exception.InvalidPatientDateOfBirthException;
 import com.hms.common.exception.InvalidRefreshTokenException;
+import com.hms.common.exception.OptimisticLockBusinessException;
 import com.hms.common.exception.OtpCooldownException;
 import com.hms.common.exception.OtpResendLimitExceededException;
 import com.hms.common.exception.PasswordExpiredException;
 import com.hms.common.exception.PatientAlreadyActiveException;
 import com.hms.common.exception.PatientAlreadyArchivedException;
 import com.hms.common.exception.PatientAlreadyDeceasedException;
+import com.hms.common.exception.PatientAlreadyPendingRequestException;
+import com.hms.common.exception.PatientAlreadyRestoredException;
 import com.hms.common.exception.PatientArchivedException;
+import com.hms.common.exception.PatientContactAlreadyPrimaryException;
+import com.hms.common.exception.PatientContactAlreadyVerifiedException;
+import com.hms.common.exception.PatientContactInactiveException;
 import com.hms.common.exception.PatientDeceasedException;
 import com.hms.common.exception.PatientNotFoundException;
 import com.hms.common.exception.ResourceNotFoundException;
@@ -427,6 +435,165 @@ public class GlobalExceptionHandler {
 
                         .build());
     }
+   
+    @ExceptionHandler(PatientAlreadyRestoredException.class)
+    public ResponseEntity<ErrorResponse> handleAlreadyPatientRestored(
+    		PatientAlreadyRestoredException ex,
+            HttpServletRequest request) {
+
+        return ResponseEntity.status(HttpStatus.CONFLICT)
+
+                .body(ErrorResponse.builder()
+
+                        .code("PATIENT_ALREADY_RESTORED")
+
+                        .message(ex.getMessage())
+
+                        .path(request.getRequestURI())
+
+                        .timestamp(LocalDateTime.now())
+
+                        .build());
+    }
+    
+    @ExceptionHandler(PatientAlreadyPendingRequestException.class)
+    public ResponseEntity<ErrorResponse> handleAlreadyPatientPendingRequest(
+    		PatientAlreadyPendingRequestException ex,
+            HttpServletRequest request) {
+
+        return ResponseEntity.status(HttpStatus.CONFLICT)
+
+                .body(ErrorResponse.builder()
+
+                        .code("PATIENT_ALREADY_PENDING_REQUEST")
+
+                        .message(ex.getMessage())
+
+                        .path(request.getRequestURI())
+
+                        .timestamp(LocalDateTime.now())
+
+                        .build());
+    }
     
     
+    @ExceptionHandler(OptimisticLockBusinessException.class)
+    public ResponseEntity<ErrorResponse> handleOptimisticLocking(
+    		OptimisticLockBusinessException ex,
+            HttpServletRequest request) {
+
+        return ResponseEntity.status(HttpStatus.CONFLICT)
+
+                .body(ErrorResponse.builder()
+
+                        .code("RECORD_ALREADY_MODIFIED")
+
+                        .message(ex.getMessage())
+
+                        .path(request.getRequestURI())
+
+                        .timestamp(LocalDateTime.now())
+
+                        .build());
+    }
+    
+    @ExceptionHandler(PatientContactAlreadyVerifiedException.class)
+    public ResponseEntity<ErrorResponse> handleAlreadyVerifiedContact(
+    		PatientContactAlreadyVerifiedException ex,
+            HttpServletRequest request) {
+
+        return ResponseEntity.status(HttpStatus.CONFLICT)
+
+                .body(ErrorResponse.builder()
+
+                        .code("CONTACT_ALREADY_VERIFIED")
+
+                        .message(ex.getMessage())
+
+                        .path(request.getRequestURI())
+
+                        .timestamp(LocalDateTime.now())
+
+                        .build());
+    }
+    
+    @ExceptionHandler(PatientContactAlreadyPrimaryException.class)
+    public ResponseEntity<ErrorResponse> handleAlreadyPrimaryContact(
+    		PatientContactAlreadyPrimaryException ex,
+            HttpServletRequest request) {
+
+        return ResponseEntity.status(HttpStatus.CONFLICT)
+
+                .body(ErrorResponse.builder()
+
+                        .code("CONTACT_ALREADY_PRIMARY")
+
+                        .message(ex.getMessage())
+
+                        .path(request.getRequestURI())
+
+                        .timestamp(LocalDateTime.now())
+
+                        .build());
+    }
+    
+    @ExceptionHandler(PatientContactInactiveException.class)
+    public ResponseEntity<ErrorResponse> handleInactiveContact(
+    		PatientContactInactiveException ex,
+            HttpServletRequest request) {
+
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+
+                .body(ErrorResponse.builder()
+
+                        .code("CONTACT_INACTIVE")
+
+                        .message(ex.getMessage())
+
+                        .path(request.getRequestURI())
+
+                        .timestamp(LocalDateTime.now())
+
+                        .build());
+    }
+    
+    @ExceptionHandler(DuplicatePatientContactException.class)
+    public ResponseEntity<ErrorResponse> handleDuplicateContact(
+    		DuplicatePatientContactException ex,
+            HttpServletRequest request) {
+
+        return ResponseEntity.status(HttpStatus.CONFLICT)
+
+                .body(ErrorResponse.builder()
+
+                        .code("CONTACT_DUPLICATE")
+
+                        .message(ex.getMessage())
+
+                        .path(request.getRequestURI())
+
+                        .timestamp(LocalDateTime.now())
+
+                        .build());
+    }
+    
+    @ExceptionHandler(InvalidPatientContactException.class)
+    public ResponseEntity<ErrorResponse> handleContactNotFound(
+    		InvalidPatientContactException ex,
+            HttpServletRequest request) {
+
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+
+                .body(ErrorResponse.builder()
+
+                        .code("CONTACT_NOT_FOUND")
+
+                        .message(ex.getMessage())
+
+                        .path(request.getRequestURI())
+
+                        .timestamp(LocalDateTime.now())
+
+                        .build());
+    }
 }

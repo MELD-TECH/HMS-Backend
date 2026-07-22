@@ -1,15 +1,16 @@
 package com.hms.patient.validation;
 
 import java.time.LocalDate;
+import java.util.Objects;
 import java.util.UUID;
 
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
-import com.hms.common.exception.BusinessException;
 import com.hms.common.exception.DuplicatePatientEmailException;
 import com.hms.common.exception.DuplicatePatientPhoneException;
 import com.hms.common.exception.InvalidPatientDateOfBirthException;
+import com.hms.common.exception.OptimisticLockBusinessException;
 import com.hms.common.exception.PatientArchivedException;
 import com.hms.common.exception.PatientDeceasedException;
 import com.hms.patient.dto.request.UpdatePatientRequest;
@@ -29,6 +30,11 @@ public class PatientUpdateValidator {
             Patient patient,
             UpdatePatientRequest request) {
 
+        
+        if (!Objects.equals(request.getVersion(), patient.getVersion())) {
+            throw new OptimisticLockBusinessException();
+        }
+        
     	validateStatus(patient);
     	
         validateDateOfBirth(request);
@@ -92,5 +98,6 @@ public class PatientUpdateValidator {
             throw new PatientDeceasedException(
                     patient.getPatientNumber());
         }
+
     }
 }

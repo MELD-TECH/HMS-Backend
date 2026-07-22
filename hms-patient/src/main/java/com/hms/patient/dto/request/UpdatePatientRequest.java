@@ -61,4 +61,7 @@ public class UpdatePatientRequest {
         regexp = "^(\\+234|0)[789][01][0-9]{8}$",
         message = "Invalid phone number")
     private String phoneNumber;
+    
+    @NotNull
+    private Long version;
 }

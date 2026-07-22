@@ -3,10 +3,16 @@ package com.hms.api.patient.support;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
+import com.hms.patient.approval.dto.request.ApproveReverseDeceasedRequest;
+import com.hms.patient.approval.dto.request.RejectReverseDeceasedRequest;
+import com.hms.patient.approval.dto.request.RequestReverseDeceasedRequest;
+import com.hms.patient.approval.entity.PatientReverseDeceasedRequest;
+import com.hms.patient.approval.enums.ApprovalStatus;
 import com.hms.patient.dto.request.ActivatePatientRequest;
 import com.hms.patient.dto.request.ArchivePatientRequest;
 import com.hms.patient.dto.request.CreatePatientRequest;
 import com.hms.patient.dto.request.DeceasedPatientRequest;
+import com.hms.patient.dto.request.RestorePatientRequest;
 import com.hms.patient.dto.request.UpdatePatientRequest;
 import com.hms.patient.entity.Patient;
 import com.hms.patient.enums.BloodGroup;
@@ -68,7 +74,7 @@ public final class PatientTestDataFactory {
 
         patient.setStatus(PatientStatus.ARCHIVED);
 
-        patient.setStatus(PatientStatus.ARCHIVED);
+        patient.setArchived(true);
 
         patient.setArchiveReason("Duplicate registration");
 
@@ -78,7 +84,6 @@ public final class PatientTestDataFactory {
 
         return patient;
     }
-    
     
     public static Patient inactivePatient() {
 
@@ -175,6 +180,15 @@ public final class PatientTestDataFactory {
 
                 .build();
     }
+   
+    public static UpdatePatientRequest validUpdateRequest(Patient patient) {
+
+        UpdatePatientRequest request = validUpdateRequest();
+
+        request.setVersion(patient.getVersion());
+
+        return request;
+    }
     
     public static Patient secondPatient() {
 
@@ -241,9 +255,27 @@ public final class PatientTestDataFactory {
         return request;
     }
     
+    public static UpdatePatientRequest blankFirstNameRequest(Patient patient) {
+
+        UpdatePatientRequest request = validUpdateRequest(patient);
+
+        request.setFirstName("");
+
+        return request;
+    }
+    
     public static UpdatePatientRequest blankLastNameRequest() {
 
         UpdatePatientRequest request = validUpdateRequest();
+
+        request.setLastName("");
+
+        return request;
+    }
+    
+    public static UpdatePatientRequest blankLastNameRequest(Patient patient) {
+
+        UpdatePatientRequest request = validUpdateRequest(patient);
 
         request.setLastName("");
 
@@ -259,7 +291,25 @@ public final class PatientTestDataFactory {
         return request;
     }
     
+    public static UpdatePatientRequest invalidEmailRequest(Patient patient) {
+
+        UpdatePatientRequest request = validUpdateRequest(patient);
+
+        request.setEmail("invalid-email");
+
+        return request;
+    }
+    
     public static UpdatePatientRequest invalidPhoneRequest() {
+
+        UpdatePatientRequest request = validUpdateRequest();
+
+        request.setPhoneNumber("123");
+
+        return request;
+    }
+    
+    public static UpdatePatientRequest invalidPhoneRequest(Patient patient) {
 
         UpdatePatientRequest request = validUpdateRequest();
 
@@ -277,6 +327,15 @@ public final class PatientTestDataFactory {
         return request;
     }
     
+    public static UpdatePatientRequest futureDobRequest(Patient patient) {
+
+        UpdatePatientRequest request = validUpdateRequest();
+
+        request.setDateOfBirth(LocalDate.now().plusDays(1));
+
+        return request;
+    }
+    
 	public static UpdatePatientRequest duplicateEmailRequest(String email) {
 
 	    UpdatePatientRequest request = validUpdateRequest();
@@ -286,11 +345,28 @@ public final class PatientTestDataFactory {
 	    return request;
 	}
 	
+	public static UpdatePatientRequest duplicateEmailRequest(String email, Patient patient) {
+
+	    UpdatePatientRequest request = validUpdateRequest(patient);
+
+	    request.setEmail(email);
+
+	    return request;
+	}
 	
 	
 	public static UpdatePatientRequest duplicatePhoneRequest(String phone) {
 
 	    UpdatePatientRequest request = validUpdateRequest();
+
+	    request.setPhoneNumber(phone);
+
+	    return request;
+	}
+	
+	public static UpdatePatientRequest duplicatePhoneRequest(String phone, Patient patient) {
+
+	    UpdatePatientRequest request = validUpdateRequest(patient);
 
 	    request.setPhoneNumber(phone);
 
@@ -526,4 +602,295 @@ public final class PatientTestDataFactory {
 
 	            .build();
 	}
+	
+	public static RestorePatientRequest validRestoreRequest() {
+
+	    return RestorePatientRequest.builder()
+
+	            .reason("Archived in error. Patient record has been verified.")
+
+	            .build();
+	}
+	
+	public static RestorePatientRequest blankRestoreRequest() {
+
+	    return RestorePatientRequest.builder()
+
+	            .reason("")
+
+	            .build();
+	}
+	
+	public static RestorePatientRequest nullRestoreRequest() {
+
+	    return RestorePatientRequest.builder()
+
+	            .reason(null)
+
+	            .build();
+	}
+	
+	public static RestorePatientRequest shortRestoreRequest() {
+
+	    return RestorePatientRequest.builder()
+
+	            .reason("abc")
+
+	            .build();
+	}
+	
+	public static RestorePatientRequest longRestoreRequest() {
+
+	    return RestorePatientRequest.builder()
+
+	            .reason("A".repeat(501))
+
+	            .build();
+	}
+	
+	public static RestorePatientRequest restoreRequest(
+	        String reason) {
+
+	    return RestorePatientRequest.builder()
+
+	            .reason(reason)
+
+	            .build();
+	}
+	
+	public static RequestReverseDeceasedRequest
+	validReverseDeceasedRequest() {
+
+	    return RequestReverseDeceasedRequest.builder()
+
+	            .reason(
+	                    "Death entry was recorded in error after verification.")
+
+	            .build();
+	}
+	
+	public static RequestReverseDeceasedRequest
+	blankReverseDeceasedRequest() {
+
+	    return RequestReverseDeceasedRequest.builder()
+
+	            .reason("")
+
+	            .build();
+	}
+	
+	public static RequestReverseDeceasedRequest
+	nullReverseDeceasedRequest() {
+
+	    return RequestReverseDeceasedRequest.builder()
+
+	            .reason(null)
+
+	            .build();
+	}
+	
+	public static RequestReverseDeceasedRequest
+	longReverseDeceasedRequest() {
+
+	    return RequestReverseDeceasedRequest.builder()
+
+	            .reason("A".repeat(501))
+
+	            .build();
+	}
+	
+	public static RequestReverseDeceasedRequest
+	reverseDeceasedRequest(
+	        String reason) {
+
+	    return RequestReverseDeceasedRequest.builder()
+
+	            .reason(reason)
+
+	            .build();
+	}
+	
+	public static PatientReverseDeceasedRequest
+	pendingReverseRequest(
+	        Patient patient,
+	        String requestedBy) {
+
+	    return PatientReverseDeceasedRequest.builder()
+
+	            .patient(patient)
+
+	            .patientNumber(patient.getPatientNumber())
+
+	            .reason("Death recorded in error.")
+
+	            .requestedBy(requestedBy)
+
+	            .requestedAt(LocalDateTime.now())
+
+	            .status(ApprovalStatus.PENDING)
+
+	            .build();
+	}
+	
+	public static PatientReverseDeceasedRequest
+	pendingReverseRequest(Patient patient) {
+
+	    return pendingReverseRequest(
+	            patient,
+	            "doctor");
+	}
+	
+	public static PatientReverseDeceasedRequest
+	approvedReverseRequest(
+	        Patient patient) {
+
+	    PatientReverseDeceasedRequest request =
+	            pendingReverseRequest(patient);
+
+	    request.approve(
+	            "checker",
+	            "Verified");
+
+	    return request;
+	}
+	
+	public static PatientReverseDeceasedRequest
+	rejectedReverseRequest(
+	        Patient patient) {
+
+	    PatientReverseDeceasedRequest request =
+	            pendingReverseRequest(patient);
+
+	    request.reject(
+	            "checker",
+	            "Death certificate verified");
+
+	    return request;
+	}
+
+	public static ApproveReverseDeceasedRequest
+	approveReverseRequest() {
+
+	    return ApproveReverseDeceasedRequest.builder()
+
+	            .approvalComment(
+	                    "Verified")
+
+	            .build();
+	}
+	
+	public static ApproveReverseDeceasedRequest
+	blankApprovalRequest() {
+
+	    return ApproveReverseDeceasedRequest.builder()
+
+	            .approvalComment("")
+
+	            .build();
+	}
+	
+	public static ApproveReverseDeceasedRequest
+	nullApprovalRequest() {
+
+	    return ApproveReverseDeceasedRequest.builder()
+
+	            .approvalComment(null)
+
+	            .build();
+	}
+	
+	public static ApproveReverseDeceasedRequest
+	shortApprovalRequest() {
+
+	    return ApproveReverseDeceasedRequest.builder()
+
+	            .approvalComment("abc")
+
+	            .build();
+	}
+	
+	public static ApproveReverseDeceasedRequest
+	longApprovalRequest() {
+
+	    return ApproveReverseDeceasedRequest.builder()
+
+	            .approvalComment("A".repeat(501))
+
+	            .build();
+	}
+	
+	public static ApproveReverseDeceasedRequest
+	approveReverseRequest(String comment) {
+
+	    return ApproveReverseDeceasedRequest.builder()
+
+	            .approvalComment(comment)
+
+	            .build();
+	}
+	
+
+	public static RejectReverseDeceasedRequest
+	rejectReverseRequest() {
+
+	    return RejectReverseDeceasedRequest.builder()
+
+	            .rejectionReason(
+	                    "Death record has been verified and confirmed.")
+
+	            .build();
+	}
+	
+	public static RejectReverseDeceasedRequest
+	blankRejectRequest() {
+
+	    return RejectReverseDeceasedRequest.builder()
+
+	            .rejectionReason("")
+
+	            .build();
+	}
+	
+	public static RejectReverseDeceasedRequest
+	nullRejectRequest() {
+
+	    return RejectReverseDeceasedRequest.builder()
+
+	            .rejectionReason(null)
+
+	            .build();
+	}
+	
+	public static RejectReverseDeceasedRequest
+	shortRejectRequest() {
+
+	    return RejectReverseDeceasedRequest.builder()
+
+	            .rejectionReason("abc")
+
+	            .build();
+	}
+	
+	public static RejectReverseDeceasedRequest
+	longRejectRequest() {
+
+	    return RejectReverseDeceasedRequest.builder()
+
+	            .rejectionReason("A".repeat(501))
+
+	            .build();
+	}
+	
+	public static RejectReverseDeceasedRequest
+	rejectReverseRequest(String reason) {
+
+	    return RejectReverseDeceasedRequest.builder()
+
+	            .rejectionReason(reason)
+
+	            .build();
+	}
+	
+	
+	
 }

@@ -24,6 +24,7 @@ import java.util.UUID;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -163,7 +164,7 @@ public class PatientController {
                         id,
                         request));
     }
-   
+  
     @PostMapping("/{id}/reverse-deceased/request")
     @PreAuthorize("hasAuthority('PATIENT_REVERSE_DECEASED_REQUEST')")
     public ResponseEntity<ReverseDeceasedRequestResponse>
@@ -171,9 +172,11 @@ public class PatientController {
             @PathVariable UUID id,
             @Valid @RequestBody RequestReverseDeceasedRequest request) {
 
-        return ResponseEntity.ok(
-                patientApprovalService
-                        .requestReverseDeceased(id, request));
+    	ReverseDeceasedRequestResponse response = patientApprovalService
+                .requestReverseDeceased(id, request);
+    	
+    	return ResponseEntity.status(HttpStatus.CREATED)
+    	        .body(response);
     }
 
 }
